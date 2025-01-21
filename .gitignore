@@ -32,3 +32,6 @@ logs/
 
 #ML models
 *.joblib
+
+#CSV files
+*.csv
