@@ -1,0 +1,32 @@
+/* Home.css */
+
+/* General container styling */
+.container {
+    font-family: Arial, sans-serif;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Header styling */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #f8f9fa;
+    padding: 10px 20px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+/* Logo styling */
+.logo img {
+    height: 50px; /* Adjust the height as needed */
+    width: auto; /* Maintain aspect ratio */
+}
+
+/* Title styling */
+.header h1 {
+    margin: 0;
+    font-size: 24px;
+    color: #333;
+}

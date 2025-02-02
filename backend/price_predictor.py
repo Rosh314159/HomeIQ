@@ -3,13 +3,14 @@ from sklearn.preprocessing import LabelEncoder
 from joblib import load  # To load your saved model
 
 loaded = False
+DATA_PATH = 'C:\\Users\\rosh0\\cs\\HomeIQ\\backend\\data'
 def load_models():
 # Load the saved model, label encoders and dictionary of local authority average prices
     print("loading models")
     global model, label_encoder_property_type, average_price_per_local_authority
-    model = load('house_price_model.joblib')
-    label_encoder_property_type = load('property_type_encoder.joblib') 
-    average_price_per_local_authority = load('average_price_per_local_authority.joblib')
+    model = load(f'{DATA_PATH}\\house_price_model.joblib')
+    label_encoder_property_type = load(f'{DATA_PATH}\\property_type_encoder.joblib') 
+    average_price_per_local_authority = load(f'{DATA_PATH}\\average_price_per_local_authority.joblib')
     global loaded
     loaded = True
     print("Finished loading models")

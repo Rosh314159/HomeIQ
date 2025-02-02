@@ -1,19 +1,18 @@
-import React, { useState } from "react";
-import HouseSearch from "./components/HouseSearch";
-import PricePredictor from "./components/PricePredictor";
-
+import React from "react";
+import './App.css';
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Home from "./pages/Home";
+import HouseDetails from "./pages/HouseDetails";
 const App = () => {
-  const [enrichedData, setEnrichedData] = useState(null);
-
-  const handleEnrichedDataFetched = (data) => {
-    setEnrichedData(data);
-  };
-
   return (
-    <div>
-      <h1>House Price Predictor</h1>
-      <HouseSearch onEnrichedDataFetched={handleEnrichedDataFetched} />
-      {enrichedData && <PricePredictor enrichedData={enrichedData} />}
+    <div className="App">
+      <BrowserRouter>
+        <Routes>
+          <Route index element={<Home />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/details" element={<HouseDetails />} />
+        </Routes>
+      </BrowserRouter>
     </div>
   );
 };

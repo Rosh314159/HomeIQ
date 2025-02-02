@@ -3,9 +3,12 @@ import urllib.request
 import io
 import csv
 from urllib.parse import urlencode
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 # EPC API details
-token = "cm9zaDAzQGxpdmUuY28udWs6NTQ0OTE5ODk3YTFmYzNkNmZkMWYzYTI4ZDExNDU3NDE1YTVjYWVhYg=="
+token = os.getenv("EPC_API")
 base_url = 'https://epc.opendatacommunities.org/api/v1/domestic/search'
 headers = {
     'Accept': 'text/csv',

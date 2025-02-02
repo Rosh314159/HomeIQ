@@ -35,3 +35,7 @@ logs/
 
 #CSV files
 *.csv
+
+
+*.jpg
+*.png
