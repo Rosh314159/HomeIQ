@@ -73,7 +73,8 @@ const HouseSearch = () => {
           const result = await predictResponse.json();
           if (result.status === "success") {
             enrichedData.predicted_price = result.predicted_price;
-
+            // Store data in localStorage
+            localStorage.setItem("houseData", JSON.stringify(enrichedData));
             // Navigate to the details page with enriched data and predicted price
             setLoading(false);
             navigate("/details", { state: { enrichedData } });
@@ -162,9 +163,11 @@ const HouseSearch = () => {
         {/* Predicted Price */}
         {predictedPrice && (
           <p className="mt-4 text-green-700 font-bold">
-            Predicted Price: £{predictedPrice.toLocaleString()}
+            Predicted Price: £22{predictedPrice.toLocaleString()}
           </p>
         )}
+
+        
       </div>
     </div>
   );

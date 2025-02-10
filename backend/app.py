@@ -1,13 +1,40 @@
 import json
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+from sqlalchemy import func
 from epc_service import get_latest_epc
+from feasibility_model import get_feasibility
 from flask_cors import CORS
 from data_enricher import enrich_data
 import pandas as pd
-
+from models import db, House
 app = Flask(__name__)
 # Enable CORS for all routes
 CORS(app)
+#Initialise DB
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///houses.db'
+db.init_app(app)
+with app.app_context():
+    db.create_all()  # Ensure tables are created
+@app.route('/houses', methods=['GET'])
+def get_houses():
+    houses = House.query.order_by(func.random()).limit(100).all()  # Get a random sample of 100 houses
+    return jsonify([
+        {
+            'transaction_id': house.transaction_id,
+            'price': house.price,
+            'ask_price': house.ask_price,
+            'predicted_price': house.predicted_price,
+            'date_of_transfer': house.date_of_transfer,
+            'postcode': house.postcode,
+            'property_type': house.property_type,
+            'latitude': house.latitude,
+            'longitude': house.longitude
+        } for house in houses
+    ])
+
+
 
 @app.route('/fetch-and-enrich', methods=['POST'])
 def fetch_epc():
@@ -62,6 +89,24 @@ def predict_price():
 
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
+
+# Feasibility assessment endpoint
+@app.route('/feasibility', methods=['POST'])
+def assess_feasibility():
+    try:
+        data = request.json
+        system_inputs = data.get('system_inputs')
+        user_inputs = data.get('user_inputs')
+
+        if not system_inputs or not user_inputs:
+            return jsonify({'status': 'error', 'message': 'System inputs and user inputs are required'}), 400
+
+        result = get_feasibility(system_inputs, user_inputs)
+        return jsonify({'status': 'success', 'result': result}), 200
+
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True)

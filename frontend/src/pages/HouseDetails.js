@@ -138,7 +138,13 @@ const HouseDetails = () => {
             </li>
           </ul>
         </div>
-
+        {/* Button to Navigate to Feasibility Assessment */}
+          <button
+            onClick={() => navigate("/feasibility")}
+            className="mt-4 w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700"
+          >
+            Run Feasibility Assessment
+          </button>
         {/* Go Back Button */}
         <div className="text-center">
           <button

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import HouseSearch from "../components/HouseSearch";
 import NavBar from "../components/NavBar";
 import PricePredictor from "../components/PricePredictor";
+import HouseList from '../components/HouseList';
+import DisplayFinancialData from '../components/DisplayFinancialData';
 
 export default function Home() {
     const [enrichedData, setEnrichedData] = useState(null);
@@ -13,6 +15,9 @@ export default function Home() {
             <h1>House Price Predictor</h1>
             <HouseSearch onEnrichedDataFetched={handleEnrichedDataFetched} />
             {enrichedData && <PricePredictor enrichedData={enrichedData} />}
+            <div>
+                <DisplayFinancialData />
+            </div>
         </div>
     )
 }

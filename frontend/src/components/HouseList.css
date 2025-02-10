@@ -1,0 +1,49 @@
+/* Container Styling */
+.container {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+  }
+  
+  /* Title Styling */
+  .title {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+  }
+  
+  /* House List Layout */
+  .house-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+  }
+  
+  /* House Card Styling */
+  .house-card {
+    background: #ffffff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    text-align: left;
+    transition: transform 0.2s ease-in-out;
+  }
+  
+  .house-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  /* Text Styling */
+  .house-card h3 {
+    margin: 0;
+    color: #007bff;
+  }
+  
+  .house-card p {
+    margin: 5px 0;
+    color: #555;
+  }
+  
