@@ -8,21 +8,21 @@ def search_houses(search_params):
         # Extract query parameters
         price_min = int(search_params['priceMin'])
         price_max = int(search_params['priceMax'])
-        #postcode = search_params['postcode']
-        #property_type = search_params['propertyType']
-        #town_city = search_params['townCity']
+        postcode = search_params['postcode']
+        property_type = search_params['propertyType']
+        town_city = search_params['townCity']
 
         # Apply filters based on query parameters
         if price_min is not None:
             query = query.filter(House.ask_price >= price_min)
         if price_max is not None:
             query = query.filter(House.ask_price <= price_max)
-        # if postcode is not None:
-        #     query = query.filter(House.postcode.like(f"%{postcode}%"))
-        # if property_type is not None:
-        #     query = query.filter(House.property_type == property_type)
-        # if town_city is not None:
-        #     query = query.filter(House.town_city.like(f"%{town_city}%"))
+        if postcode is not None:
+            query = query.filter(House.postcode.like(f"%{postcode}%"))
+        if property_type is not None:
+            query = query.filter(House.property_type == property_type)
+        if town_city is not None:
+            query = query.filter(House.town_city.like(f"%{town_city}%"))
 
         # Execute query and fetch results
         houses = query.all()
