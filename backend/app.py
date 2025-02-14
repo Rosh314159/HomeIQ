@@ -5,8 +5,10 @@ from datetime import datetime
 from sqlalchemy import func
 from epc_service import get_latest_epc
 from feasibility_model import get_feasibility
+from recommendation_service import get_similar_houses
 from flask_cors import CORS
 from data_enricher import enrich_data
+from enhanced_search import search_houses
 import pandas as pd
 from models import db, House
 app = Flask(__name__)
@@ -107,6 +109,29 @@ def assess_feasibility():
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
+
+@app.route('/recommendations', methods=['POST'])
+def recommend_houses():
+    try:
+        data = request.json
+        house_features = data
+        if not house_features:
+            return jsonify({'error': 'House features are required for recommendations'}), 400
+
+        recommendations = get_similar_houses(house_features)
+        return jsonify({'recommendations': recommendations})
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/enhanced_search', methods=['GET'])
+def enhanced_search():
+    try:
+        search_params = request.args.to_dict()
+        houses = search_houses(search_params)
+        return houses
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)

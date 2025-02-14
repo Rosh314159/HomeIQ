@@ -6,6 +6,7 @@ import HouseDetails from "./pages/HouseDetails";
 import Browse from "./pages/Browse";
 import FinancialDetails from "./pages/FinancialDetails";
 import FeasibilityAssessment from "./components/FeasibilityAssessment";
+import EnhancedSearch from "./pages/EnhancedSearch";
 const App = () => {
   return (
     <div className="App">
@@ -14,7 +15,7 @@ const App = () => {
           <Route index element={<Home />} />
           <Route path="/" element={<Home />} />
           <Route path="/details" element={<HouseDetails />} />
-          <Route path="/browse" element={<Browse />} />
+          <Route path="/search" element={<EnhancedSearch />} />
           <Route path="/upload" element={<FinancialDetails />} />
           <Route path="/feasibility" element={<FeasibilityAssessment />} />
         </Routes>

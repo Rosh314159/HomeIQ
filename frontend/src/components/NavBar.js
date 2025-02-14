@@ -11,9 +11,9 @@ import {
 import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 const navigation = [
-  { name: "Predict House", href: "/predict-house", current: true },
-  { name: "Affordability Assessment", href: "/affordability", current: false },
-  { name: "Find Houses", href: "/find-houses", current: false },
+  { name: "Home", href: "/", current: true },
+  { name: "Update Financial Data", href: "/upload", current: false },
+  { name: "Enhanced Search", href: "/search", current: false },
 ];
 
 function classNames(...classes) {
@@ -34,13 +34,7 @@ const Navbar = () => {
             </Disclosure.Button>
           </div>
           <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-            <div className="flex shrink-0 items-center">
-              <img
-                className="h-8 w-auto"
-                src="https://tailwindui.com/plus/img/logos/mark.svg?color=indigo&shade=500"
-                alt="Your Company"
-              />
-            </div>
+    
             <div className="hidden sm:ml-6 sm:block">
               <div className="flex space-x-4">
                 {navigation.map((item) => (

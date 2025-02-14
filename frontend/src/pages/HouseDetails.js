@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-
+import HouseRecommendations from "../components/HouseRecommendation";
+import Navbar from "../components/NavBar";
 const HouseDetails = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const enrichedData = location.state?.enrichedData;
+  const [showRecommendations, setShowRecommendations] = useState(false);
 
   if (!enrichedData) {
     return (
@@ -35,9 +37,17 @@ const HouseDetails = () => {
         return "Unknown";
     }
   };
+  const houseRecommendationAttributes = {
+    predicted_price: enrichedData.predicted_price,
+    latitude: enrichedData.latitude,
+    longitude: enrichedData.longitude,
+  };
+
   const fullPropertyType = getPropertyTypeFull(enrichedData.property_type);
+ 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
+      <Navbar />
       {/* Header Section */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-8 px-6 text-center">
         <h1 className="text-3xl font-bold">{enrichedData.address}</h1>
@@ -145,6 +155,16 @@ const HouseDetails = () => {
           >
             Run Feasibility Assessment
           </button>
+          {/* Button to Show Recommendations */}
+        <button
+          onClick={() => setShowRecommendations(true)}
+          className="mt-4 w-full px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700"
+        >
+          View Similar Houses
+        </button>
+
+        {/* Render Recommendations if Button Clicked */}
+        {showRecommendations && <HouseRecommendations houseAttributes={houseRecommendationAttributes} />}
         {/* Go Back Button */}
         <div className="text-center">
           <button

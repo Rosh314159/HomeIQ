@@ -12,7 +12,7 @@ export default function Home() {
     };
     return (
         <div class="">
-            <h1>House Price Predictor</h1>
+            <NavBar />
             <HouseSearch onEnrichedDataFetched={handleEnrichedDataFetched} />
             {enrichedData && <PricePredictor enrichedData={enrichedData} />}
             <div>
