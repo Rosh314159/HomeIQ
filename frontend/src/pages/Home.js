@@ -15,9 +15,6 @@ export default function Home() {
             <NavBar />
             <HouseSearch onEnrichedDataFetched={handleEnrichedDataFetched} />
             {enrichedData && <PricePredictor enrichedData={enrichedData} />}
-            <div>
-                <DisplayFinancialData />
-            </div>
         </div>
     )
 }

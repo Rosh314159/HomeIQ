@@ -113,9 +113,15 @@ const HouseSearch = () => {
             placeholder="Enter postcode (e.g., RG31 6YP)"
             value={postcode}
             onChange={(e) => setPostcode(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && postcode.trim()) {
+                fetchAddresses();
+              }
+            }}
             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-600 focus:outline-none"
           />
           <button
+          
             onClick={fetchAddresses}
             className="px-4 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 shadow-md"
             disabled={loading}
@@ -137,6 +143,11 @@ const HouseSearch = () => {
             <select
               value={selectedAddress}
               onChange={(e) => setSelectedAddress(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && postcode.trim()) {
+                  fetchEnrichedData();
+                }
+              }}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-600 focus:outline-none"
             >
               <option value="">Select an address</option>

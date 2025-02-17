@@ -13,7 +13,7 @@ const DisplayEnhancedSearch = ({ houses }) => {
             <p><strong>Address:</strong> {house.paon}, {house.street}, {house.postcode}</p>
             <p><strong>Town/City:</strong> {house.town_city}</p>
             <p><strong>Latitude:</strong> {house.latitude}</p>
-            <p><strong>Longitude:</strong> {house.longitude}</p>
+            <p><strong>Longitude:</strong> {house.nearest_shop_name}</p>
           </div>
         ))}
       </div>

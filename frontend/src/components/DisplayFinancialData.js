@@ -5,9 +5,8 @@ const DisplayFinancialData = () => {
 
   useEffect(() => {
     const storedData = localStorage.getItem('userFinancialData');
-    if (storedData) {
+    console.log(storedData)
       setUserData(JSON.parse(storedData));
-    }
   }, []);
 
   if (!userData) {
@@ -20,7 +19,7 @@ const DisplayFinancialData = () => {
       <ul className="space-y-2">
         <li><strong>Annual Income:</strong> £{userData.annual_income}</li>
         <li><strong>Monthly Debt Obligations:</strong> £{userData.debt_obligations}</li>
-        <li><strong>Savings:</strong> £{userData.savings}</li>
+        <li><strong>Deposit:</strong> £{userData.savings}</li>
         <li><strong>First Time Home Buyer:</strong> {userData.is_first_home ? 'Yes' : 'No'}</li>
       </ul>
     </div>

@@ -127,11 +127,17 @@ def recommend_houses():
 @app.route('/enhanced_search', methods=['GET'])
 def enhanced_search():
     try:
+        # Get query parameters
         search_params = request.args.to_dict()
-        houses = search_houses(search_params)
-        return houses
+
+        # Call search_houses which already handles pagination
+        result = search_houses(search_params)
+
+        return result  # search_houses already returns JSON
+
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({"error": str(e)}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True)

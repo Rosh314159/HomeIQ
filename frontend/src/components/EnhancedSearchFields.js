@@ -24,14 +24,28 @@ const EnhancedSearchFields = () => {
     setSearchCriteria({ ...searchCriteria, [name]: value });
   };
 
-  const handleSearch = async () => {
-    try {
-      const response = await axios.get('http://localhost:5000/enhanced_search', { params: searchCriteria });
-      setSearchResults(response.data);
-    } catch (error) {
-      console.error('Error fetching search results:', error);
-    }
-  };
+  const [currentPage, setCurrentPage] = useState(1);
+  const resultsPerPage = 50;
+
+const handleSearch = async (page = 1) => {
+  try {
+    setLoading(true);
+    setError(null);
+
+    const response = await axios.get("http://localhost:5000/enhanced_search", {
+      params: { ...searchCriteria, currentPage, limit: resultsPerPage },
+    });
+
+    setSearchResults(response.data.houses);
+    setCurrentPage(page);
+  } catch (error) {
+    setError("Error fetching search results.");
+    console.error(error);
+  } finally {
+    setLoading(false);
+  }
+};
+
   if (searchResults.length > 0) {
     return <DisplayEnhancedSearch houses={searchResults} />;
   }
@@ -143,10 +157,26 @@ const EnhancedSearchFields = () => {
             <p><strong>Predicted Price:</strong> £{house.predicted_price.toLocaleString()}</p>
             <p><strong>Property Type:</strong> {house.property_type}</p>
             <p><strong>New Build:</strong> {house.new_build}</p>
-            <p><strong>Town/City:</strong> {house.town_city}</p>
+            <p><strong>Town/City:</strong> {house.nearest_shop_name}</p>
           </div>
         ))}
       </div>
+      {/* Pagination Controls */}
+      <div className="flex justify-between mt-4">
+      <button
+        onClick={() => handleSearch(currentPage - 1)}
+        disabled={currentPage <= 1}
+        className={`px-4 py-2 bg-gray-300 rounded-lg shadow-md ${currentPage > 1 ? "hover:bg-gray-400" : "opacity-50 cursor-not-allowed"}`}
+      >
+        Previous
+      </button>
+      <button
+        onClick={() => handleSearch(currentPage + 1)}
+        className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700"
+      >
+        Next
+      </button>
+    </div>
     </div>
   );
 };
