@@ -179,6 +179,7 @@ def enrich_age(epc_df):
         return np.nan
 
     epc_df['age_in_years'] = epc_df['construction-age-band'].apply(convert_age_band_to_years)
+    epc_df.columns = epc_df.columns.str.replace('-', '_')
     return epc_df
 
 def enrich_data(epc_df):

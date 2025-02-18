@@ -6,6 +6,7 @@ const YourFinancialData = () => {
     return (
         <div>
             <div>
+                <NavBar />
                 <UpdateFinancialData />
             </div>
             

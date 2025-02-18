@@ -29,8 +29,8 @@ def predict_house_price(data):
 
     # Define relevant columns for the model
     relevant_columns = [
-        'age_in_years', 'postcode', 'property_type', 'local-authority-label', 
-        'total-floor-area', 'number-habitable-rooms', 'number-open-fireplaces',
+        'age_in_years', 'postcode', 'property_type', 'local_authority_label', 
+        'total_floor_area', 'number_habitable_rooms', 'number_open_fireplaces',
         'nearest_primary_school_distance', 'nearest_secondary_school_distance', 
         'nearest_primary_school_outstanding', 'nearest_secondary_school_outstanding', 
         'nearest_shop_distance', 'nearest_train_station_distance', 'nearest_bus_stop_distance'
@@ -38,6 +38,16 @@ def predict_house_price(data):
     print("h")
     # Select relevant columns
     data = data[relevant_columns]
+
+    new_column_names = [
+        'age_in_years', 'postcode', 'property_type', 'local-authority-label', 
+        'total-floor-area', 'number-habitable-rooms', 'number-open-fireplaces',
+        'nearest_primary_school_distance', 'nearest_secondary_school_distance', 
+        'nearest_primary_school_outstanding', 'nearest_secondary_school_outstanding', 
+        'nearest_shop_distance', 'nearest_train_station_distance', 'nearest_bus_stop_distance'
+    ]
+
+    data.columns = new_column_names
     X = data.copy()
     
     

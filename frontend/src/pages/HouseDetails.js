@@ -1,13 +1,47 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import HouseRecommendations from "../components/HouseRecommendation";
 import Navbar from "../components/NavBar";
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography } from "@mui/material";
+import FeasibilityAssessment from "../components/FeasibilityAssessment";
 const HouseDetails = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const enrichedData = location.state?.enrichedData;
   const [showRecommendations, setShowRecommendations] = useState(false);
+  const [isFeasibilityOpen, setIsFeasibilityOpen] = useState(false);
+  // Function to save recent searches in localStorage
+  const saveRecentSearch = () => {
+    if (!enrichedData) return;
 
+    // Extract relevant details to store
+    const house = enrichedData;
+
+    // Retrieve existing recent searches
+    let recentSearches = JSON.parse(localStorage.getItem("recentSearches")) || [];
+
+    // Remove duplicates (if already in recent searches)
+    recentSearches = recentSearches.filter((recentHouse) => recentHouse.postcode !== house.postcode);
+
+    // Add new search at the start
+    recentSearches.unshift(house);
+    console.log(recentSearches);
+
+    // Keep only the last 5 searches
+    if (recentSearches.length > 5) {
+      recentSearches.pop();
+    }
+
+    // Save back to localStorage
+    localStorage.setItem("recentSearches", JSON.stringify(recentSearches));
+  };
+
+  // Save search when component mounts
+  useEffect(() => {
+    saveRecentSearch();
+  }, [enrichedData]); // Run only once when component mounts
+
+  
   if (!enrichedData) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-gray-100 font-sans">
@@ -37,11 +71,6 @@ const HouseDetails = () => {
         return "Unknown";
     }
   };
-  const houseRecommendationAttributes = {
-    predicted_price: enrichedData.predicted_price,
-    latitude: enrichedData.latitude,
-    longitude: enrichedData.longitude,
-  };
 
   const fullPropertyType = getPropertyTypeFull(enrichedData.property_type);
  
@@ -69,16 +98,16 @@ const HouseDetails = () => {
             </li>
             <li>
               <strong className="text-gray-900">Construction Age Band:</strong>{" "}
-              {enrichedData["construction-age-band"]}
+              {enrichedData["construction_age_band"]}
             </li>
             <li>
-              <strong className="text-gray-900">Total Floor Area:</strong> {enrichedData["total-floor-area"]} sqm
+              <strong className="text-gray-900">Total Floor Area:</strong> {enrichedData["total_floor_area"]} sqm
             </li>
             <li>
-              <strong className="text-gray-900">Habitable Rooms:</strong> {enrichedData["number-habitable-rooms"]}
+              <strong className="text-gray-900">Habitable Rooms:</strong> {enrichedData["number_habitable_rooms"]}
             </li>
             <li>
-              <strong className="text-gray-900">Heated Rooms:</strong> {enrichedData["number-heated-rooms"]}
+              <strong className="text-gray-900">Heated Rooms:</strong> {enrichedData["number_heated_rooms"]}
             </li>
           </ul>
         </div>
@@ -89,16 +118,16 @@ const HouseDetails = () => {
           <ul className="space-y-2 text-gray-700">
             <li>
               <strong className="text-gray-900">Current Energy Rating:</strong>{" "}
-              {enrichedData["current-energy-rating"]} ({enrichedData["current-energy-efficiency"]})
+              {enrichedData["current_energy_rating"]} ({enrichedData["current_energy_efficiency"]})
             </li>
             <li>
               <strong className="text-gray-900">Potential Energy Rating:</strong>{" "}
-              {enrichedData["potential-energy-rating"]} ({enrichedData["potential-energy-efficiency"]})
+              {enrichedData["potential_energy_rating"]} ({enrichedData["potential_energy_efficiency"]})
             </li>
             <li>
               <strong className="text-gray-900">CO2 Emissions:</strong>{" "}
-              {enrichedData["co2-emissions-current"]} tonnes (Current),{" "}
-              {enrichedData["co2-emissions-potential"]} tonnes (Potential)
+              {enrichedData["co2_emissions_current"]} tonnes (Current),{" "}
+              {enrichedData["co2_emissions_potential"]} tonnes (Potential)
             </li>
           </ul>
         </div>
@@ -135,26 +164,46 @@ const HouseDetails = () => {
           <h3 className="text-xl font-bold text-red-600 border-b pb-2 mb-4">Costs</h3>
           <ul className="space-y-2 text-gray-700">
             <li>
-              <strong className="text-gray-900">Heating Costs:</strong> £{enrichedData["heating-cost-current"]}{" "}
-              (Current), £{enrichedData["heating-cost-potential"]} (Potential)
+              <strong className="text-gray-900">Heating Costs:</strong> £{enrichedData["heating_cost_current"]}{" "}
+              (Current), £{enrichedData["heating_cost_potential"]} (Potential)
             </li>
             <li>
-              <strong className="text-gray-900">Hot Water Costs:</strong> £{enrichedData["hot-water-cost-current"]}{" "}
-              (Current), £{enrichedData["hot-water-cost-potential"]} (Potential)
+              <strong className="text-gray-900">Hot Water Costs:</strong> £{enrichedData["hot_water_cost_current"]}{" "}
+              (Current), £{enrichedData["hot_water_cost_potential"]} (Potential)
             </li>
             <li>
-              <strong className="text-gray-900">Lighting Costs:</strong> £{enrichedData["lighting-cost-current"]}{" "}
-              (Current), £{enrichedData["lighting-cost-potential"]} (Potential)
+              <strong className="text-gray-900">Lighting Costs:</strong> £{enrichedData["lighting_cost_current"]}{" "}
+              (Current), £{enrichedData["lighting_cost_potential"]} (Potential)
             </li>
           </ul>
         </div>
         {/* Button to Navigate to Feasibility Assessment */}
           <button
-            onClick={() => navigate("/feasibility")}
+            onClick={() => setIsFeasibilityOpen(true)}
             className="mt-4 w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700"
           >
             Run Feasibility Assessment
           </button>
+
+          {/* Feasibility Assessment Modal */}
+          <Dialog open={isFeasibilityOpen} onClose={() => setIsFeasibilityOpen(false)} fullWidth maxWidth="md">
+            <DialogTitle>Feasibility Assessment</DialogTitle>
+            <DialogContent>
+              {enrichedData ? (
+                <FeasibilityAssessment data={enrichedData} /> // Pass enrichedData to feasibility assessment component
+              ) : (
+                <Typography variant="body1" color="textSecondary">
+                  No data available for assessment.
+                </Typography>
+              )}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setIsFeasibilityOpen(false)} color="primary">
+                Close
+              </Button>
+            </DialogActions>
+          </Dialog>
+
           {/* Button to Show Recommendations */}
         <button
           onClick={() => setShowRecommendations(true)}
@@ -164,7 +213,7 @@ const HouseDetails = () => {
         </button>
 
         {/* Render Recommendations if Button Clicked */}
-        {showRecommendations && <HouseRecommendations houseAttributes={houseRecommendationAttributes} />}
+        {showRecommendations && <HouseRecommendations houseAttributes={enrichedData} />}
         {/* Go Back Button */}
         <div className="text-center">
           <button

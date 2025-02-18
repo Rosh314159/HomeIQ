@@ -12,7 +12,7 @@ def get_similar_houses(house_features):
         # Fetch houses from the database
         houses = House.query.limit(100).all()
 
-        full_house_data = [house.__dict__ for house in houses]
+        full_house_data = [{k.lower(): v for k, v in house.__dict__.items()} for house in houses]
         for house in full_house_data:
             house.pop('_sa_instance_state', None)  # Remove SQLAlchemy internal state if present
         # Convert to DataFrame

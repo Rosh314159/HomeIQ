@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const FeasibilityAssessment = () => {
+const FeasibilityAssessment = ( houseData ) => {
   const [assessment, setAssessment] = useState(null);
   const [error, setError] = useState("");
 
@@ -9,8 +9,8 @@ const FeasibilityAssessment = () => {
     const fetchFeasibilityAssessment = async () => {
       try {
         const userFinancialData = JSON.parse(localStorage.getItem("userFinancialData"));
-        const houseData = JSON.parse(localStorage.getItem("houseData"));
-
+        //const houseData = JSON.parse(localStorage.getItem("houseData"));
+        console.log(houseData.data.predicted_price);
         if (!userFinancialData || !houseData) {
           setError("Missing user financial data or house details.");
           return;
@@ -18,7 +18,7 @@ const FeasibilityAssessment = () => {
 
         // Construct inputs for feasibility assessment
         const systemInputs = {
-          house_price: houseData.predicted_price,
+          house_price: houseData.data.predicted_price,
           loan_term_years: 30,
           interest_rate: 3.5,
           property_tax: 200,

@@ -1,183 +1,294 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DisplayEnhancedSearch from "./DisplayEnhancedSearch";
 import axios from "axios";
+import {
+  Box,
+  Button,
+  Checkbox,
+  Container,
+  FormControl,
+  FormControlLabel,
+  Grid,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  TextField,
+  Typography,
+  Alert,
+} from "@mui/material";
 
 const EnhancedSearchFields = () => {
   const [searchCriteria, setSearchCriteria] = useState({
     priceMin: 0,
     priceMax: 1000000,
-    propertyType: "",
+    propertyType: [],
     postcode: "",
     newBuild: "",
     townCity: "",
-    nearestPrimarySchoolDistance: 5,
-    nearestSecondarySchoolDistance: 5,
-    nearestTrainStationDistance: 5
+    undervalued: "", // "undervalued", "overvalued", or ""
+    walkingTimeToPrimarySchool: "",
+    walkingTimeToSecondarySchool: "",
+    walkingTimeToTrainStation: "",
+    onlyAffordable: false,
+    annual_income: "",
+    debt_obligations: "",
+    deposit_amount: "",
+    first_time_buyer: "",
   });
 
-  const [results, setResults] = useState([]);
+  // Check if financial data exists in localStorage
+  useEffect(() => {
+    const storedData = localStorage.getItem("userFinancialData");
+    if (storedData) {
+      setFinancialData(JSON.parse(storedData));
+    }
+  }, []);
+
+  const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [searchResults, setSearchResults] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [financialData, setFinancialData] = useState(null);
+  const resultsPerPage = 50;
+
+  // Function to convert walking time (minutes) to distance (km)
+  const convertWalkingTimeToDistance = (minutes) => {
+    const avgWalkingSpeedKmPerMin = 0.08; // Avg human walking speed ~ 4.8 km/h
+    return (minutes * avgWalkingSpeedKmPerMin).toFixed(2);
+  };
+
+  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setSearchCriteria({ ...searchCriteria, [name]: value });
   };
+  const handleSearch = async (page = 1) => {
+    try {
+      setLoading(true);
+      setError(null);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const resultsPerPage = 50;
+      // Convert walking time inputs to distances
+      const adjustedCriteria = {
+        ...searchCriteria,
+        nearestPrimarySchoolDistance: convertWalkingTimeToDistance(searchCriteria.walkingTimeToPrimarySchool),
+        nearestSecondarySchoolDistance: convertWalkingTimeToDistance(searchCriteria.walkingTimeToSecondarySchool),
+        nearestTrainStationDistance: convertWalkingTimeToDistance(searchCriteria.walkingTimeToTrainStation),
+      };
 
-const handleSearch = async (page = 1) => {
-  try {
-    setLoading(true);
-    setError(null);
+      // If "Only Show Houses I Can Afford" is checked, add affordability filtering
+      if (searchCriteria.onlyAffordable && financialData) {
+        adjustedCriteria.onlyAffordable = true; // Example affordability rule (4x income)
+        adjustedCriteria.annual_income = financialData.annual_income;
+        adjustedCriteria.debt_obligations = financialData.debt_obligations;
+        adjustedCriteria.deposit_amount = financialData.savings;
+        adjustedCriteria.is_first_home = financialData.is_first_home;
+      }
+  
+      // Remove empty fields
+      Object.keys(adjustedCriteria).forEach((key) => {
+        if (!adjustedCriteria[key]) delete adjustedCriteria[key];
+      });
 
-    const response = await axios.get("http://localhost:5000/enhanced_search", {
-      params: { ...searchCriteria, currentPage, limit: resultsPerPage },
-    });
+      const response = await axios.get("http://localhost:5000/enhanced_search", {
+      params: { ...searchCriteria, page, limit: resultsPerPage },
+      });
 
-    setSearchResults(response.data.houses);
-    setCurrentPage(page);
-  } catch (error) {
-    setError("Error fetching search results.");
-    console.error(error);
-  } finally {
-    setLoading(false);
-  }
-};
+      setSearchResults(response.data.houses);
+      setCurrentPage(page);
+    } catch (error) {
+      setError("Error fetching search results.");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (searchResults.length > 0) {
-    return <DisplayEnhancedSearch houses={searchResults} />;
+    return (
+      <div>
+        <DisplayEnhancedSearch houses={searchResults} />
+        {/* Pagination Controls */}
+        <div className="flex justify-between mt-4">
+        <button
+           onClick={() => {
+             setCurrentPage((prev) => {
+               const newPage = Number(prev) - 1;
+               handleSearch(newPage); // Use newPage immediately
+               return newPage
+             });
+           }}
+          className={`px-4 py-2 bg-gray-300 rounded-lg shadow-md ${currentPage > 1 ? "hover:bg-gray-400" : "opacity-50 cursor-not-allowed"}`}
+        >
+          Previous
+        </button>
+        <button
+          onClick={() => {
+            setCurrentPage((prev) => {
+              const newPage = Number(prev) + 1;
+              handleSearch(newPage); // Use newPage immediately
+              return newPage;
+            });
+          }}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700"
+        >
+          Next
+        </button>
+        </div>
+    </div>
+    )
   }
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <h1 className="text-3xl font-bold text-center mb-6">Search Houses for Sale</h1>
+    <Container maxWidth="md" sx={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Paper elevation={6} sx={{ p: 4, borderRadius: 3, width: "100%" }}>
+        <Typography variant="h4" fontWeight="bold" textAlign="center" gutterBottom>
+          Search Houses for Sale
+        </Typography>
 
-      {/* Search Form */}
-      <div className="max-w-4xl mx-auto bg-white p-6 rounded-2xl shadow-lg space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input
-            type="number"
-            name="priceMin"
-            placeholder="Min Price"
-            value={searchCriteria.priceMin}
-            onChange={handleChange}
-            className="p-3 border rounded-lg focus:ring-2 focus:ring-blue-400"
-          />
-          <input
-            type="number"
-            name="priceMax"
-            placeholder="Max Price"
-            value={searchCriteria.priceMax}
-            onChange={handleChange}
-            className="p-3 border rounded-lg focus:ring-2 focus:ring-blue-400"
-          />
-          <input
-            type="text"
-            name="propertyType"
-            placeholder="Property Type (D, S, T, F, B)"
-            value={searchCriteria.propertyType}
-            onChange={handleChange}
-            className="p-3 border rounded-lg focus:ring-2 focus:ring-blue-400"
-          />
-          <input
-            type="text"
-            name="postcode"
-            placeholder="Postcode"
-            value={searchCriteria.postcode}
-            onChange={handleChange}
-            className="p-3 border rounded-lg focus:ring-2 focus:ring-blue-400"
-          />
-          <select
-            name="newBuild"
-            value={searchCriteria.newBuild}
-            onChange={handleChange}
-            className="p-3 border rounded-lg focus:ring-2 focus:ring-blue-400"
-          >
-            <option value="">New Build?</option>
-            <option value="Yes">Yes</option>
-            <option value="No">No</option>
-          </select>
-          <input
-            type="text"
-            name="townCity"
-            placeholder="Town/City"
-            value={searchCriteria.townCity}
-            onChange={handleChange}
-            className="p-3 border rounded-lg focus:ring-2 focus:ring-blue-400"
-          />
-          <input
-            type="number"
-            step="0.1"
-            name="nearestPrimarySchoolDistance"
-            placeholder="Max Distance to Primary School (km)"
-            value={searchCriteria.nearestPrimarySchoolDistance}
-            onChange={handleChange}
-            className="p-3 border rounded-lg focus:ring-2 focus:ring-blue-400"
-          />
-          <input
-            type="number"
-            step="0.1"
-            name="nearestSecondarySchoolDistance"
-            placeholder="Max Distance to Secondary School (km)"
-            value={searchCriteria.nearestSecondarySchoolDistance}
-            onChange={handleChange}
-            className="p-3 border rounded-lg focus:ring-2 focus:ring-blue-400"
-          />
-          <input
-            type="number"
-            step="0.1"
-            name="nearestTrainStationDistance"
-            placeholder="Max Distance to Train Station (km)"
-            value={searchCriteria.nearestTrainStationDistance}
-            onChange={handleChange}
-            className="p-3 border rounded-lg focus:ring-2 focus:ring-blue-400"
-          />
-        </div>
+        <Grid container spacing={3}>
+          {/* Min Price */}
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Min Price"
+              type="number"
+              fullWidth
+              name="priceMin"
+              value={searchCriteria.priceMin}
+              onChange={handleChange}
+              variant="outlined"
+            />
+          </Grid>
 
-        <button
-          onClick={handleSearch}
-          className="w-full py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition duration-300"
+          {/* Max Price */}
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Max Price"
+              type="number"
+              fullWidth
+              name="priceMax"
+              value={searchCriteria.priceMax}
+              onChange={handleChange}
+              variant="outlined"
+            />
+          </Grid>
+
+          {/* Affordability Checkbox */}
+          <Grid item xs={12}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={searchCriteria.onlyAffordable}
+                  onChange={handleChange}
+                  name="onlyAffordable"
+                  disabled={!financialData} // Disable if financial data is missing
+                />
+              }
+              label="Only Show Houses I Can Afford"
+            />
+            {!financialData && (
+              <Alert severity="warning" sx={{ mt: 1 }}>
+                You need to set your financial data first.
+              </Alert>
+            )}
+          </Grid>
+
+          {/* Property Type */}
+          <Grid item xs={12}>
+            <Typography variant="subtitle1" fontWeight="bold">
+              Property Type
+            </Typography>
+            <Grid container spacing={1}>
+              {["Detached", "Semi-Detached", "Terraced", "Flat", "Bungalow"].map((type) => (
+                <Grid item key={type}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={searchCriteria.propertyType.includes(type)}
+                        onChange={(e) => {
+                          const { checked } = e.target;
+                          setSearchCriteria((prev) => ({
+                            ...prev,
+                            propertyType: checked
+                              ? [...prev.propertyType, type]
+                              : prev.propertyType.filter((t) => t !== type),
+                          }));
+                        }}
+                      />
+                    }
+                    label={type}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          </Grid>
+
+          {/* Postcode */}
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Postcode"
+              fullWidth
+              name="postcode"
+              value={searchCriteria.postcode}
+              onChange={handleChange}
+              variant="outlined"
+            />
+          </Grid>
+
+          {/* New Build */}
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>New Build?</InputLabel>
+              <Select name="newBuild" value={searchCriteria.newBuild} onChange={handleChange}>
+                <MenuItem value="">Select</MenuItem>
+                <MenuItem value="Yes">Yes</MenuItem>
+                <MenuItem value="No">No</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          {/* Undervalued or Overvalued */}
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>Price Valuation</InputLabel>
+              <Select name="undervalued" value={searchCriteria.undervalued} onChange={handleChange}>
+                <MenuItem value="">Any</MenuItem>
+                <MenuItem value="undervalued">Undervalued (Predicted {'<'} Ask Price)</MenuItem>
+                <MenuItem value="overvalued">Overvalued (Ask Price {'>'} Predicted)</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          {/* Walking Distance Inputs */}
+          {[
+            { label: "Max Walking Time to Primary School (min)", name: "walkingTimeToPrimarySchool" },
+            { label: "Max Walking Time to Secondary School (min)", name: "walkingTimeToSecondarySchool" },
+            { label: "Max Walking Time to Train Station (min)", name: "walkingTimeToTrainStation" },
+          ].map(({ label, name }) => (
+            <Grid item xs={12} sm={6} key={name}>
+              <TextField
+                label={label}
+                type="number"
+                fullWidth
+                name={name}
+                value={searchCriteria[name]}
+                onChange={handleChange}
+                variant="outlined"
+              />
+            </Grid>
+          ))}
+        </Grid>
+
+        <Button
+          variant="contained"
+          color="primary"
+          fullWidth
+          sx={{ mt: 3, py: 1.5, fontSize: "1.1rem" }}
+          onClick={() => handleSearch(1)}
         >
           Search
-        </button>
-      </div>
-
-      {/* Search Results */}
-      <div className="max-w-4xl mx-auto mt-8 space-y-4">
-        {loading && <p className="text-center text-blue-600">Loading results...</p>}
-        {error && <p className="text-center text-red-500">{error}</p>}
-        {!loading && results.length === 0 && <p className="text-center text-gray-500">No houses found.</p>}
-
-        {results.map((house, index) => (
-          <div key={index} className="p-4 bg-white shadow rounded-lg border">
-            <h2 className="text-xl font-semibold">{house.paon}, {house.street}, {house.postcode}</h2>
-            <p><strong>Price:</strong> £{house.price.toLocaleString()}</p>
-            <p><strong>Asking Price:</strong> £{house.ask_price.toLocaleString()}</p>
-            <p><strong>Predicted Price:</strong> £{house.predicted_price.toLocaleString()}</p>
-            <p><strong>Property Type:</strong> {house.property_type}</p>
-            <p><strong>New Build:</strong> {house.new_build}</p>
-            <p><strong>Town/City:</strong> {house.nearest_shop_name}</p>
-          </div>
-        ))}
-      </div>
-      {/* Pagination Controls */}
-      <div className="flex justify-between mt-4">
-      <button
-        onClick={() => handleSearch(currentPage - 1)}
-        disabled={currentPage <= 1}
-        className={`px-4 py-2 bg-gray-300 rounded-lg shadow-md ${currentPage > 1 ? "hover:bg-gray-400" : "opacity-50 cursor-not-allowed"}`}
-      >
-        Previous
-      </button>
-      <button
-        onClick={() => handleSearch(currentPage + 1)}
-        className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700"
-      >
-        Next
-      </button>
-    </div>
-    </div>
+        </Button>
+      </Paper>
+    </Container>
   );
 };
 
