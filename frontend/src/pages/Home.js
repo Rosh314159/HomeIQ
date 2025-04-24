@@ -2,13 +2,12 @@ import React, { useState } from 'react';
 import HouseSearch from "../components/HouseSearch";
 import NavBar from "../components/NavBar";
 import PricePredictor from "../components/PricePredictor";
-import { Box, Container, CssBaseline, useTheme } from "@mui/material";
+import { Box, Container } from "@mui/material";
 import RecentSearches from '../components/RecentSearches';
-import { Typography } from '@mui/material';
+
 
 export default function Home() {
   const [enrichedData, setEnrichedData] = useState(null);
-  const theme = useTheme();
   const handleEnrichedDataFetched = (data) => {
     setEnrichedData(data);
   };
