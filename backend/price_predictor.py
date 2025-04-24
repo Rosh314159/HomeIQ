@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 from joblib import load  # To load your saved model
-
+import shap
 loaded = False
 DATA_PATH = 'C:\\Users\\rosh0\\cs\\HomeIQ\\backend\\data'
 def load_models():
@@ -61,5 +61,13 @@ def predict_house_price(data):
     print(X.columns)
     # Predict house price
     predicted_price = model.predict(X)
-    print("f")
-    return predicted_price[0]
+     # Explain the prediction using SHAP
+    rf_model = model.named_steps['regressor']
+    imputer = model.named_steps['imputer']
+    scaler = model.named_steps['scaler']
+    X_preprocessed = scaler.transform(imputer.transform(X))
+    explainer = shap.TreeExplainer(rf_model)
+    shap_values = explainer.shap_values(X_preprocessed)
+    # Return predicted price and shap info
+    return float(predicted_price[0]), shap_values[0].tolist(), float(explainer.expected_value), X.iloc[0].to_dict()
+

@@ -2,35 +2,32 @@ import React, { useState } from 'react';
 import HouseSearch from "../components/HouseSearch";
 import NavBar from "../components/NavBar";
 import PricePredictor from "../components/PricePredictor";
-import HouseList from '../components/HouseList';
-import DisplayFinancialData from '../components/DisplayFinancialData';
-import { Box, Container, CssBaseline } from "@mui/material";
+import { Box, Container, CssBaseline, useTheme } from "@mui/material";
 import RecentSearches from '../components/RecentSearches';
-
+import { Typography } from '@mui/material';
 
 export default function Home() {
-    const [enrichedData, setEnrichedData] = useState(null);
+  const [enrichedData, setEnrichedData] = useState(null);
+  const theme = useTheme();
+  const handleEnrichedDataFetched = (data) => {
+    setEnrichedData(data);
+  };
 
-    const handleEnrichedDataFetched = (data) => {
-        setEnrichedData(data);
-    };
-
-    return (
-        <Box
-            sx={{
-                minHeight: "100vh",
-                //background: "radial-gradient(circle, #F5F5F5 20%, #D3D3D3 80%)",
-                color: "#fff",
-                paddingBottom: "40px",
-            }}
-        >
-            <CssBaseline />
-            <NavBar />
-            <Container maxWidth="lg" sx={{ mt: 4, pb: 4 }}>
-                <HouseSearch onEnrichedDataFetched={handleEnrichedDataFetched} />
-                {enrichedData && <PricePredictor enrichedData={enrichedData} />}
-                <RecentSearches />
-            </Container>
-        </Box>
-    );
+  return (
+    <>
+      <Box sx={{ position: 'relative' }}>
+        <NavBar />
+        <Container maxWidth="lg" sx={{ mt: 0, pb: 0 }}>
+          <Box sx={{ position: 'relative' }}>
+            <HouseSearch onEnrichedDataFetched={handleEnrichedDataFetched} />
+            {enrichedData && <PricePredictor enrichedData={enrichedData} />}
+          </Box>
+          <Box sx={{ position: 'absolute', top: "10%", right: "5%", mt: 2 }}>
+            <RecentSearches />
+          </Box>
+        </Container>
+        
+      </Box>
+    </>
+  );
 }

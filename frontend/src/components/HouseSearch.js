@@ -1,7 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import "./HouseSearch.css";
+import { 
+  Box, Typography, TextField, Button, Select, MenuItem,
+  FormControl, InputLabel, Paper, CircularProgress,
+  Alert, Fade, Slide, InputAdornment, Divider
+} from "@mui/material";
+import SearchIcon from '@mui/icons-material/Search';
+import HomeIcon from '@mui/icons-material/Home';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
 
 const HouseSearch = () => {
   const [postcode, setPostcode] = useState("");
@@ -10,6 +17,7 @@ const HouseSearch = () => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [predictedPrice, setPredictedPrice] = useState(null);
+  const [searchStage, setSearchStage] = useState("postcode"); // "postcode", "address", "results"
   const navigate = useNavigate();
 
   // Function to fetch addresses from Postcode.io
@@ -24,15 +32,15 @@ const HouseSearch = () => {
     setLoading(true);
 
     try {
-      const key = process.env.REACT_APP_POSTCODE_API
-      console.log(key)
+      const key = process.env.REACT_APP_POSTCODE_API;
       const response = await axios.get(
         `https://api.getAddress.io/autocomplete/${postcode}?api-key=${key}`
-        
       );
+      console.log(response);
       const filteredAddresses = response.data.suggestions.map(suggestion => suggestion.address);
       setAddresses(filteredAddresses || []);
       setLoading(false);
+      setSearchStage("address");
     } catch (error) {
       setErrorMessage("Could not fetch addresses. Please check the postcode.");
       setLoading(false);
@@ -73,8 +81,9 @@ const HouseSearch = () => {
           const result = await predictResponse.json();
           if (result.status === "success") {
             enrichedData.predicted_price = result.predicted_price;
-            // Store data in localStorage
-            localStorage.setItem("houseData", JSON.stringify(enrichedData));
+            enrichedData.shap_values = result.shap_values;
+            enrichedData.expected_value = result.expected_value;
+            enrichedData.features = result.features;
             // Navigate to the details page with enriched data and predicted price
             setLoading(false);
             navigate("/details", { state: { enrichedData } });
@@ -91,96 +100,159 @@ const HouseSearch = () => {
       }
     } catch (enrichError) {
       console.error("Error fetching enriched data:", enrichError);
-      setErrorMessage("An error occurred while fetching enriched data.");
+      setErrorMessage("This house cannot be viewed as a valid EPC certificate can not be found for it, please try a different house");
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gray-50 px-4">
-      <h1 className="text-xl font-bold mb-4 text-gray-800">
-        Search for House Information
-      </h1>
-
-      {/* Postcode Input */}
-      <div className="w-full max-w-md">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Enter Postcode
-        </label>
-        <div className="flex items-center gap-2">
-          <input
-            type="text"
-            placeholder="Enter postcode (e.g., RG31 6YP)"
-            value={postcode}
-            onChange={(e) => setPostcode(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && postcode.trim()) {
-                fetchAddresses();
-              }
-            }}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-600 focus:outline-none"
-          />
-          <button
+    <Paper 
+      elevation={3} 
+      sx={{
+        maxWidth: 600,
+        width: '100%',
+        mx: 'auto',
+        p: 4,
+        borderRadius: 2,
+        background: 'linear-gradient(145deg, #ffffff 0%, #f9fafb 100%)',
+        transition: 'all 0.3s ease',
+      }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+        <HomeIcon sx={{ fontSize: 28, color: 'primary.main', mr: 2 }} />
+        <Typography variant="h5" fontWeight="600" color="text.primary">
+          Find Your Dream Home
+        </Typography>
+      </Box>
+      
+      <Divider sx={{ mb: 3 }} />
+      
+      {/* Postcode Input Section */}
+      <Fade in={true}>
+        <Box>
+          <Typography variant="subtitle1" fontWeight="500" sx={{ mb: 1.5 }}>
+            Enter a UK postcode to begin your property search
+          </Typography>
           
-            onClick={fetchAddresses}
-            className="px-4 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 shadow-md"
-            disabled={loading}
-          >
-            {loading ? "Loading..." : "Find"}
-          </button>
-        </div>
-
-        {errorMessage && (
-          <p className="mt-2 text-sm text-red-600">{errorMessage}</p>
-        )}
-
-        {/* Address Dropdown */}
-        {addresses.length > 0 && (
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Select an Address
-            </label>
-            <select
-              value={selectedAddress}
-              onChange={(e) => setSelectedAddress(e.target.value)}
+          <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+            <TextField
+              placeholder="e.g. RG30 6XY"
+              value={postcode}
+              onChange={(e) => setPostcode(e.target.value.toUpperCase())}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && postcode.trim()) {
-                  fetchEnrichedData();
+                  fetchAddresses();
                 }
               }}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-600 focus:outline-none"
+              fullWidth
+              variant="outlined"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <LocationOnIcon color="action" />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                }
+              }}
+            />
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={fetchAddresses}
+              disabled={loading || !postcode.trim()}
+              sx={{ 
+                px: 3,
+                borderRadius: 2,
+                minWidth: '120px',
+                boxShadow: 2,
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: 3,
+                }
+              }}
+              startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <SearchIcon />}
             >
-              <option value="">Select an address</option>
-              {addresses.map((address, index) => (
-                <option key={index} value={address}>
-                  {address}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+              {loading ? "Searching..." : "Find"}
+            </Button>
+          </Box>
+        </Box>
+      </Fade>
 
-        {/* Search Button */}
-        {selectedAddress && (
-          <button
-            onClick={fetchEnrichedData}
-            className="mt-4 w-full px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 shadow-md"
-            disabled={loading}
+      {/* Error Message */}
+      {errorMessage && (
+        <Fade in={!!errorMessage}>
+          <Alert 
+            severity="error" 
+            onClose={() => setErrorMessage("")}
+            sx={{ mb: 2, borderRadius: 2 }}
           >
-            {loading ? "Processing..." : "Search"}
-          </button>
-        )}
+            {errorMessage}
+          </Alert>
+        </Fade>
+      )}
 
-        {/* Predicted Price */}
-        {predictedPrice && (
-          <p className="mt-4 text-green-700 font-bold">
-            Predicted Price: £22{predictedPrice.toLocaleString()}
-          </p>
-        )}
-
-        
-      </div>
-    </div>
+      {/* Address Selection Section */}
+      <Slide direction="up" in={addresses.length > 0} mountOnEnter unmountOnExit>
+        <Box sx={{ mt: 3 }}>
+          <Typography variant="subtitle1" fontWeight="500" sx={{ mb: 1.5 }}>
+            Select your address from the list below
+          </Typography>
+          
+          <FormControl fullWidth variant="outlined" sx={{ mb: 2 }}>
+            <InputLabel id="address-select-label">Select Address</InputLabel>
+            <Select
+              labelId="address-select-label"
+              value={selectedAddress}
+              onChange={(e) => setSelectedAddress(e.target.value)}
+              label="Select Address"
+              sx={{ borderRadius: 2 }}
+            >
+              <MenuItem value="" disabled>Choose an address</MenuItem>
+              {addresses.map((address, index) => (
+                <MenuItem key={index} value={address} sx={{ py: 1.5 }}>
+                  {address}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          
+          <Fade in={!!selectedAddress}>
+            <Box>
+              <Button
+                variant="contained"
+                color="secondary"
+                fullWidth
+                onClick={fetchEnrichedData}
+                disabled={loading || !selectedAddress}
+                sx={{ 
+                  py: 1.5,
+                  borderRadius: 2,
+                  boxShadow: 2,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: 3,
+                  }
+                }}
+              >
+                {loading ? (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CircularProgress size={24} color="inherit" /> 
+                    Retrieving Property Data...
+                  </Box>
+                ) : (
+                  "Get Property Details"
+                )}
+              </Button>
+            </Box>
+          </Fade>
+        </Box>
+      </Slide>
+    </Paper>
   );
 };
 

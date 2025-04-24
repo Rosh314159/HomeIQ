@@ -1,43 +1,67 @@
-import { createTheme } from "@mui/material/styles";
+// src/theme.js
+import { createTheme } from '@mui/material';
 
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#673AB7", // Fallback solid color (Deep Purple)
+      main: '#1f2937', // matches bg-gray-800 from the navbar
+      light: '#374151', // matches hover:bg-gray-700 from the navbar
+      dark: '#111827', // matches bg-gray-900 from the navbar
+      contrastText: '#ffffff',
     },
     secondary: {
-      main: "#03A9F4", // Light Blue
+      main: '#dc2626', // matches bg-red-600 from the Clear All Data button
+      dark: '#b91c1c', // matches hover:bg-red-700
+    },
+    background: {
+      default: '#f9fafb', // light gray background
+      paper: '#ffffff',
+    },
+    text: {
+      primary: '#111827', // dark text matching the navbar's dark theme
+      secondary: '#6b7280', // gray-500 for secondary text
     },
   },
   typography: {
-    fontFamily: "Arial, sans-serif",
+    fontFamily: '"Inter", "Helvetica", "Arial", sans-serif',
+    h1: {
+      fontSize: '2rem',
+      fontWeight: 600,
+    },
+    h2: {
+      fontSize: '1.5rem',
+      fontWeight: 600,
+    },
+    h3: {
+      fontSize: '1.25rem',
+      fontWeight: 600,
+    },
+    button: {
+      textTransform: 'none',
+    }
   },
   components: {
-    MuiCssBaseline: {
+    MuiPaper: {
       styleOverrides: {
-        body: {
-          background: "radial-gradient(circle, #F5F5F5 20%, #D3D3D3 80%)",
-          minHeight: "100vh",
-          margin: 0,
-          padding: 0,
-          width: "100%",
-          overflowX: "hidden",
+        root: {
+          borderRadius: 8,
+          boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
         },
       },
     },
     MuiButton: {
       styleOverrides: {
         root: {
-          background: "radial-gradient(circle, #F5F5F5 20%, #D3D3D3 80%)",
-          color: "#fff",
-          padding: "10px 20px",
-          fontWeight: "bold",
-          textTransform: "none",
-          borderRadius: "8px",
-          transition: "0.3s",
-          "&:hover": {
-            background: "linear-gradient(45deg, #3F51B5 30%, #1A237E 90%)",
-          },
+          textTransform: 'none',
+          borderRadius: 6,
+          fontWeight: 500,
+        },
+      },
+    },
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#1f2937', // Match navbar color
         },
       },
     },

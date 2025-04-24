@@ -1,0 +1,7 @@
+/* Add this to your CSS file if needed */
+.recent-searches {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin-top: 106px; /* Adjust as needed */
+  }

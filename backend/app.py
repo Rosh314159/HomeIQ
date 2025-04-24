@@ -80,12 +80,15 @@ def predict_price():
         enriched_df = pd.DataFrame([enriched_data])
 
         # Predict the house price
-        predicted_price = predict_house_price(enriched_df)
+        predicted_price, shap_values, expected_value, features = predict_house_price(enriched_df)
 
         # Return the predicted price
         response = {
             'status': 'success',
-            'predicted_price': predicted_price
+            'predicted_price': predicted_price,
+            'shap_values': shap_values,
+            'expected_value': expected_value,
+            'features': features
         }
         return jsonify(response)
 

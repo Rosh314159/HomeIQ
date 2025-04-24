@@ -45,26 +45,43 @@ def get_feasibility(system_inputs, user_inputs):
     is_first_home = bool(user_inputs['is_first_home'])
 
     monthly_income = annual_income / 12
-    loan_amount = house_price - savings
+    loan_amount = max(0, house_price - savings)
+    ltv_ratio = max(0, (loan_amount / house_price) * 100)
+    #Change interest rate based on LTV ratio (data from Rightmove)
+    if ltv_ratio >= 0.90:
+        interest_rate = 5.77
+    elif ltv_ratio >= 0.85:
+        interest_rate = 5.55
+    elif ltv_ratio >= 0.80:
+        interest_rate = 5.48
+    elif ltv_ratio >= 0.6:
+        interest_rate = 5.18
+    else:
+        interest_rate = 4.95
+
     monthly_payment = calculate_monthly_payment(loan_amount, interest_rate, loan_term_years)
     stamp_duty = calculate_stamp_duty(house_price, is_first_home)
     total_housing_costs = monthly_payment + property_tax + insurance + utility_bills
 
     dti_ratio = (debt_obligations + total_housing_costs) / monthly_income * 100
-    ltv_ratio = (loan_amount / house_price) * 100
+    
     mortgage_to_income_ratio = loan_amount / annual_income
     meets_mortgage_income_threshold = mortgage_to_income_ratio <= 4.5
-
-    is_affordable = dti_ratio < 36 and total_housing_costs / monthly_income < 0.28 and meets_mortgage_income_threshold
-    meets_ltv_threshold = ltv_ratio <= 80
+    meets_ltv_threshold = ltv_ratio <= 95
+    meets_dti_ratio = dti_ratio < 36
+    meets_house_to_monthly = total_housing_costs / monthly_income < 0.28
+    is_affordable = meets_dti_ratio and meets_house_to_monthly and meets_mortgage_income_threshold and meets_ltv_threshold
+    
 
     recommendations = []
-    if not is_affordable:
-        recommendations.append("Reduce monthly debt obligations, increase income, or choose a less expensive house.")
+    if not meets_mortgage_income_threshold:
+        recommendations.append("You have exceeded the mortgage to income ratio - consider a house with a lower price or increase deposit to reduce the required mortgage")
     if not meets_ltv_threshold:
         recommendations.append("Increase your deposit to lower the loan-to-value ratio.")
-    if not meets_mortgage_income_threshold:
-        recommendations.append("Consider a house with a lower price or increase your savings to reduce the required mortgage.")
+    if not meets_dti_ratio:
+        recommendations.append("You have exceeded the debt to income ratio - lower your monthly debt or increase monthly income")
+    if not meets_house_to_monthly:
+        recommendations.append("The total housing costs associated with this house would result in your house costs to be more than 28{%} of your monthly income")
 
     return {
         'monthly_payment': round(monthly_payment, 2),
@@ -76,5 +93,7 @@ def get_feasibility(system_inputs, user_inputs):
         'is_affordable': is_affordable,
         'meets_ltv_threshold': meets_ltv_threshold,
         'meets_mortgage_income_threshold': meets_mortgage_income_threshold,
-        'recommendations': recommendations
+        'recommendations': recommendations,
+        'monthly_debt_obligations': debt_obligations,
+        'monthly_income': monthly_income
     }

@@ -16,6 +16,7 @@ import {
   TextField,
   Typography,
   Alert,
+  Snackbar,
 } from "@mui/material";
 
 const EnhancedSearchFields = () => {
@@ -50,23 +51,29 @@ const EnhancedSearchFields = () => {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [financialData, setFinancialData] = useState(null);
+  const [noResultsMessage, setNoResultsMessage] = useState("");
   const resultsPerPage = 50;
 
   // Function to convert walking time (minutes) to distance (km)
   const convertWalkingTimeToDistance = (minutes) => {
+    if (!minutes) { return null; }
     const avgWalkingSpeedKmPerMin = 0.08; // Avg human walking speed ~ 4.8 km/h
     return (minutes * avgWalkingSpeedKmPerMin).toFixed(2);
   };
 
   // Handle input changes
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setSearchCriteria({ ...searchCriteria, [name]: value });
+    const { name, value, type, checked } = e.target;
+    setSearchCriteria((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
   };
   const handleSearch = async (page = 1) => {
     try {
       setLoading(true);
       setError(null);
+      setNoResultsMessage(""); // Clear previous no results message
 
       // Convert walking time inputs to distances
       const adjustedCriteria = {
@@ -76,8 +83,10 @@ const EnhancedSearchFields = () => {
         nearestTrainStationDistance: convertWalkingTimeToDistance(searchCriteria.walkingTimeToTrainStation),
       };
 
+      console.log(financialData.annual_income);
       // If "Only Show Houses I Can Afford" is checked, add affordability filtering
       if (searchCriteria.onlyAffordable && financialData) {
+        console.log("Here");
         adjustedCriteria.onlyAffordable = true; // Example affordability rule (4x income)
         adjustedCriteria.annual_income = financialData.annual_income;
         adjustedCriteria.debt_obligations = financialData.debt_obligations;
@@ -88,14 +97,18 @@ const EnhancedSearchFields = () => {
       // Remove empty fields
       Object.keys(adjustedCriteria).forEach((key) => {
         if (!adjustedCriteria[key]) delete adjustedCriteria[key];
+        console.log(adjustedCriteria);
       });
 
       const response = await axios.get("http://localhost:5000/enhanced_search", {
-      params: { ...searchCriteria, page, limit: resultsPerPage },
+      params: { ...adjustedCriteria, page, limit: resultsPerPage },
       });
-
-      setSearchResults(response.data.houses);
-      setCurrentPage(page);
+      if (response.data.houses.length === 0) {
+        setNoResultsMessage("No houses found matching your criteria.");
+      } else {
+        setSearchResults(response.data.houses);
+        setCurrentPage(page);
+      }
     } catch (error) {
       setError("Error fetching search results.");
       console.error(error);
@@ -288,6 +301,19 @@ const EnhancedSearchFields = () => {
           Search
         </Button>
       </Paper>
+
+      {/* No Results Message Popup */}
+      <Snackbar
+        open={!!noResultsMessage}
+        autoHideDuration={6000}
+        onClose={() => setNoResultsMessage("")}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert onClose={() => setNoResultsMessage("")} severity="info" sx={{ width: "100%" }}>
+          {noResultsMessage}
+        </Alert>
+      </Snackbar>
+
     </Container>
   );
 };

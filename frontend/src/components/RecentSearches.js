@@ -18,8 +18,8 @@ const RecentSearches = () => {
     };
 
     return (
-        <Box sx={{ mt: 4 }}>
-            <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold", color: "#333" }}>
+        <Box sx={{ width: "100%", mt: 4 }}>
+            <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold", color: "#333" }}>
                 Recent Searches
             </Typography>
             {recentSearches.length === 0 ? (
@@ -27,7 +27,7 @@ const RecentSearches = () => {
                     No recent searches available.
                 </Typography>
             ) : (
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 0.4 }}>
                     {recentSearches.map((house, index) => (
                         <Card
                             key={index}
@@ -37,19 +37,27 @@ const RecentSearches = () => {
                                 transition: "background 0.3s",
                                 boxShadow: 2,
                                 borderRadius: "10px",
+                                width: "100%",
+                                margin: "0 auto" // Center the card
                             }}
                             onClick={() => handleRecentClick(house)}
                         >
                             <CardContent>
-                                <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                                    {house.houseNameOrNumber}
+                                <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+                                    {house.address1}
                                 </Typography>
-                                <Typography variant="body2" color="textSecondary">
-                                    {house.postcode}
-                                </Typography>
+                                {/* <Typography variant="body2" color="primary">
+                                    Property Type: {house.property_type}
+                                </Typography> */}
+                                {/* <Typography variant="body2" color="primary">
+                                    Floor Area: {house.total_floor_area}m<sup>2</sup>
+                                </Typography> */}
                                 <Typography variant="body2" color="primary">
-                                    Predicted Price: £{house.predicted_price}
+                                    Predicted Price: £{Math.round(house.predicted_price)}
                                 </Typography>
+                                {/* <Typography variant="body2" color="primary">
+                                    Postcode: {house.postcode}
+                                </Typography> */}
                             </CardContent>
                         </Card>
                     ))}

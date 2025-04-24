@@ -1,6 +1,22 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { 
+  Paper, Typography, TextField, Box, Button, 
+  Checkbox, FormControlLabel, Divider,
+  InputAdornment, Alert, Fade, LinearProgress,
+  FormHelperText, IconButton, Tooltip
+} from '@mui/material';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import CreditCardIcon from '@mui/icons-material/CreditCard';
+import SavingsIcon from '@mui/icons-material/Savings';
+import HomeIcon from '@mui/icons-material/Home';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 const UpdateFinancialData = () => {
+  const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [userData, setUserData] = useState({
     annual_income: "",
     debt_obligations: "",
@@ -8,128 +24,305 @@ const UpdateFinancialData = () => {
     credit_score: "",
     is_first_home: false,
   });
+  
+  const [errors, setErrors] = useState({
+    annual_income: "",
+    debt_obligations: "",
+    savings: ""
+  });
 
   // Load data from localStorage on component mount
   useEffect(() => {
     const storedData = localStorage.getItem("userFinancialData");
     if (storedData) {
       const parsedData = JSON.parse(storedData);
-      console.log(typeof parsedData.annual_income);
       setUserData({
-        ...parsedData,
-        annual_income: typeof parsedData.annual_income === "string" ? parseInt(parsedData.annual_income.replace(/,/g, ""), 10) : parsedData.annual_income,
-        debt_obligations: typeof parsedData.debt_obligations === "string" ? (isNaN(parseInt(parsedData.debt_obligations.replace(/,/g, ""), 10)) ? "" : parseInt(parsedData.debt_obligations.replace(/,/g, ""), 10)) : parsedData.debt_obligations,
-        savings: typeof parsedData.savings === "string" ? (isNaN(parseInt(parsedData.savings.replace(/,/g, ""), 10)) ? "" : parseInt(parsedData.savings.replace(/,/g, ""), 10)) : parsedData.savings,
-        credit_score: typeof parsedData.credit_score === "string" ? (isNaN(parseInt(parsedData.credit_score.replace(/,/g, ""), 10)) ? "" : parseInt(parsedData.credit_score.replace(/,/g, ""), 10)) : parsedData.credit_score,
+        annual_income: parsedData.annual_income || "",
+        debt_obligations: parsedData.debt_obligations || "",
+        savings: parsedData.savings || "",
+        credit_score: parsedData.credit_score || "",
+        is_first_home: parsedData.is_first_home || false,
       });
     }
   }, []);
 
-  // Restrict input to numbers and commas only
+  // Format number with commas as user types
+  const formatNumber = (value) => {
+    if (!value) return "";
+    // Remove any non-digit characters
+    const num = value.toString().replace(/[^\d]/g, "");
+    // Add commas for thousands
+    return num.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
+
+  // Handle input changes
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
     if (type === "checkbox") {
-      setUserData((prevData) => ({ ...prevData, [name]: checked }));
+      setUserData((prev) => ({ ...prev, [name]: checked }));
     } else {
-      // Allow only numbers and commas
-      const formattedValue = value.replace(/[^0-9,]/g, "");
-      setUserData((prevData) => ({ ...prevData, [name]: formattedValue }));
+      // For numeric fields, format with commas
+      const formattedValue = formatNumber(value);
+      setUserData((prev) => ({ ...prev, [name]: formattedValue }));
+      
+      // Clear error when field is filled
+      if (formattedValue) {
+        setErrors(prev => ({ ...prev, [name]: "" }));
+      }
     }
   };
 
-  const saveToLocalStorage = () => {
-    const convertedUserData = {
-      ...userData,
-      annual_income: typeof userData.annual_income === "string" ? parseInt(userData.annual_income.replace(/,/g, ""), 10) : userData.annual_income,
-      debt_obligations: typeof userData.debt_obligations === "string" ? parseInt(userData.debt_obligations.replace(/,/g, ""), 10) : userData.debt_obligations,
-      savings: typeof userData.savings === "string" ? parseInt(userData.savings.replace(/,/g, ""), 10) : userData.savings,
-      credit_score: typeof userData.credit_score === "string" ? parseInt(userData.credit_score.replace(/,/g, ""), 10) : userData.credit_score,
-    };
-    localStorage.setItem("userFinancialData", JSON.stringify(convertedUserData));
-    alert("Data Saved! " + localStorage.getItem("userFinancialData"));
-    //navigateToHome();
+  // Validate form fields
+  const validateForm = () => {
+    let isValid = true;
+    const newErrors = { annual_income: "", debt_obligations: "", savings: "" };
+    
+    if (!userData.annual_income) {
+      newErrors.annual_income = "Annual income is required";
+      isValid = false;
+    }
+    
+    if (!userData.debt_obligations) {
+      newErrors.debt_obligations = "Monthly debt information is required";
+      isValid = false;
+    }
+    
+    if (!userData.savings) {
+      newErrors.savings = "Savings amount is required";
+      isValid = false;
+    }
+    
+    setErrors(newErrors);
+    return isValid;
   };
 
-  const navigateToHome = () => {
-    window.location.href = "/your-financial-data";
+  // Save data to localStorage
+  const saveToLocalStorage = async () => {
+    if (!validateForm()) return;
+    
+    setIsSubmitting(true);
+    
+    try {
+      // Convert string values with commas to integers
+      const parseValue = (val) => {
+        if (!val) return 0;
+        return parseInt(val.toString().replace(/,/g, ""), 10);
+      };
+      
+      const dataToSave = {
+        annual_income: parseValue(userData.annual_income),
+        debt_obligations: parseValue(userData.debt_obligations),
+        savings: parseValue(userData.savings),
+        credit_score: parseValue(userData.credit_score),
+        is_first_home: userData.is_first_home
+      };
+      
+      localStorage.setItem("userFinancialData", JSON.stringify(dataToSave));
+      
+      // Simulate a brief delay to show the success message
+      setShowSuccess(true);
+      setTimeout(() => {
+        navigate("/your-financial-data");
+      }, 1500);
+      
+    } catch (error) {
+      console.error("Error saving data:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-  
 
   return (
-    <div className="max-w-md mx-auto p-6">
-      <div className="bg-white shadow-xl rounded-2xl p-6">
-        <h2 className="text-2xl font-bold text-center text-gray-700 mb-6">
-          Update Your Financial Data
-        </h2>
-  
-        {/* Annual Income */}
-        <div className="mb-4">
-          <label className="block text-gray-700 font-semibold mb-1">Annual Income (£)</label>
-          <input
-            type="text"
+    <Paper 
+      elevation={3} 
+      sx={{
+        maxWidth: 600,
+        width: '100%',
+        mx: 'auto',
+        mt: 4,
+        p: 4,
+        borderRadius: 3,
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
+      {isSubmitting && (
+        <LinearProgress 
+          sx={{ 
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+          }} 
+        />
+      )}
+      
+      {/* Header with back button */}
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+        <IconButton 
+          sx={{ mr: 2 }} 
+          onClick={() => navigate("/your-financial-data")}
+          aria-label="Go back"
+        >
+          <ArrowBackIcon />
+        </IconButton>
+        <Typography variant="h5" fontWeight={600} component="h1">
+          Your Financial Profile
+        </Typography>
+      </Box>
+      
+      <Typography variant="body1" color="text.secondary" paragraph>
+        Enter your financial details below to get personalized home affordability insights.
+      </Typography>
+      
+      <Divider sx={{ my: -3.1 }} />
+      
+      {/* Success message */}
+      <Fade in={showSuccess}>
+        <Alert 
+          severity="success" 
+          sx={{ mb: 3 }}
+          onClose={() => setShowSuccess(false)}
+        >
+          Your financial data has been saved successfully!
+        </Alert>
+      </Fade>
+      
+      {/* Form fields */}
+      <Box sx={{ mb: 4 }}>
+        <Box sx={{ mb: 3 }}>
+          <TextField
             name="annual_income"
+            label="Annual Income"
             value={userData.annual_income}
             onChange={handleChange}
-            className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter your annual income"
+            error={!!errors.annual_income}
+            helperText={errors.annual_income}
+            fullWidth
+            variant="outlined"
+            placeholder="e.g. 45,000"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <AccountBalanceWalletIcon color="primary" />
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="end">£</InputAdornment>
+              ),
+            }}
           />
-        </div>
-  
-        {/* Monthly Debt Obligations */}
-        <div className="mb-4">
-          <label className="block text-gray-700 font-semibold mb-1">Monthly Debt Obligations (£)</label>
-          <input
-            type="text"
+          <FormHelperText>
+            Your gross annual income before tax
+          </FormHelperText>
+        </Box>
+        
+        <Box sx={{ mb: 3 }}>
+          <TextField
             name="debt_obligations"
+            label="Monthly Debt Obligations"
             value={userData.debt_obligations}
             onChange={handleChange}
-            className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter your debt obligations"
+            error={!!errors.debt_obligations}
+            helperText={errors.debt_obligations}
+            fullWidth
+            variant="outlined"
+            placeholder="e.g. 500"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <CreditCardIcon color="error" />
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="end">£</InputAdornment>
+              ),
+            }}
           />
-        </div>
-  
-        {/* Savings */}
-        <div className="mb-4">
-          <label className="block text-gray-700 font-semibold mb-1">Savings (£)</label>
-          <input
-            type="text"
+          <FormHelperText sx={{ display: 'flex', alignItems: 'center' }}>
+            Include all monthly payments: loans, credit cards, etc.
+            <Tooltip title="Include all regular monthly payments such as car loans, student loans, credit card minimum payments, and other debt obligations." arrow>
+              <IconButton size="small">
+                <HelpOutlineIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </FormHelperText>
+        </Box>
+        
+        <Box sx={{ mb: 3 }}>
+          <TextField
             name="savings"
+            label="Available Deposit"
             value={userData.savings}
             onChange={handleChange}
-            className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter your savings"
+            error={!!errors.savings}
+            helperText={errors.savings}
+            fullWidth
+            variant="outlined"
+            placeholder="e.g. 20,000"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SavingsIcon color="success" />
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="end">£</InputAdornment>
+              ),
+            }}
           />
-        </div>
-  
-        {/* First Time Home Buyer Checkbox */}
-        <div className="flex items-center mb-6">
-          <input
-            type="checkbox"
-            name="is_first_home"
-            checked={userData.is_first_home}
-            onChange={handleChange}
-            className="w-5 h-5 text-blue-500 focus:ring-blue-500 border-gray-300 rounded"
-          />
-          <label className="ml-3 text-gray-700 font-medium">
-            First Time Home Buyer?
-          </label>
-        </div>
-  
-        {/* Save Button */}
-        <button
-          onClick={() => {
-            saveToLocalStorage();
-            navigateToHome();
-          }}
-          className="w-full p-3 bg-blue-500 text-white text-lg font-semibold rounded-2xl shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-        >
-          Save Data
-        </button>
-      </div>
-    </div>
+          <FormHelperText>
+            Total deposit available for your home
+          </FormHelperText>
+        </Box>
+        
+        <FormControlLabel
+          control={
+            <Checkbox
+              name="is_first_home"
+              checked={userData.is_first_home}
+              onChange={handleChange}
+              color="primary"
+            />
+          }
+          label={
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Typography>First-time home buyer</Typography>
+              <Tooltip title="First-time buyers may be eligible for special programs and incentives." arrow>
+                <IconButton size="small">
+                  <HelpOutlineIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          }
+        />
+      </Box>
+    
+      
+      {/* Save Button */}
+      <Button
+        variant="contained"
+        size="large"
+        fullWidth
+        onClick={saveToLocalStorage}
+        disabled={isSubmitting || !userData.annual_income || !userData.debt_obligations || !userData.savings}
+        sx={{
+          py: 1.5,
+          borderRadius: 2,
+          textTransform: 'none',
+          fontSize: '1rem',
+        }}
+      >
+        {isSubmitting ? "Saving..." : "Save Financial Data"}
+      </Button>
+      
+      {/* Additional info */}
+      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2, textAlign: 'center' }}>
+        Your data is saved locally on your device and not sent to any server.
+      </Typography>
+    </Paper>
   );
-  
 };
 
 export default UpdateFinancialData;

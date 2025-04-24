@@ -167,7 +167,7 @@ def enrich_house_type(epc_df):
 def enrich_age(epc_df):
     def convert_age_band_to_years(age_band):
         if pd.isna(age_band) or age_band == 'NO DATA!' or age_band == 'INVALID!':
-            return np.nan
+            return 50
         elif '-' in age_band:
             years = re.findall(r'\d{4}', age_band)
             if len(years) == 2:

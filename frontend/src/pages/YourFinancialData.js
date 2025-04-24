@@ -12,12 +12,9 @@ const YourFinancialData = () => {
             <div>
                 <NavBar />
                 <DisplayFinancialData />
-                <button onClick={navigateToUpdate}>
-                    Update
-                </button>
             </div>
         </div>
     );
 };
 
-export default YourFinancialData;
+export default YourFinancialData;  

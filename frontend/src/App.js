@@ -8,6 +8,7 @@ import YourFinancialData from "./pages/YourFinancialData";
 import FeasibilityAssessment from "./components/FeasibilityAssessment";
 import UpdateFinancialData from "./components/UpdateFinancialData";
 import EnhancedSearch from "./pages/EnhancedSearch";
+import About from "./pages/About"
 import { ThemeProvider, CssBaseline } from "@mui/material";
 import theme from "./theme"; // Import the theme
 import { useEffect } from "react";
@@ -39,6 +40,7 @@ const App = () => {
           <Route path="/your-financial-data" element={<YourFinancialData />} />
           <Route path="/update-financial-data" element={<UpdateFinancialData />} />
           <Route path="/feasibility" element={<FeasibilityAssessment />} />
+          <Route path="/about" element={<About />} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>

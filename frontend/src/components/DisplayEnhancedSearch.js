@@ -1,33 +1,84 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Box, Typography, Paper, Grid, Skeleton, useMediaQuery, useTheme } from '@mui/material';
+import HomeIcon from '@mui/icons-material/Home';
+import HouseTile from './HouseTile';
 
-const DisplayEnhancedSearch = ({ houses }) => {
-    const navigate = useNavigate();
-    const handleTileClick = (house) => {
-      navigate("/details", { state: { enrichedData: house } });
-    };
+const DisplayEnhancedSearch = ({ houses, loading = false }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
+  // Loading placeholder
+  if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 p-6">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {houses.map((house, index) => (
-            <div
-              key={index}
-              className="bg-white p-4 rounded-lg shadow-lg border cursor-pointer"
-              onClick={() => handleTileClick(house)}
-            >
-              <h3 className="text-xl font-semibold mb-2">Asking Price: £{house.ask_price}</h3>
-              <p><strong>Predicted Price:</strong> £{house.predicted_price}</p>
-              <p><strong>Property Type:</strong> {house.property_type}</p>
-              <p><strong>Postcode:</strong> {house.postcode}</p>
-              <p><strong>Address:</strong> {house.paon}, {house.street}, {house.postcode}</p>
-              <p><strong>Town/City:</strong> {house.town_city}</p>
-              <p><strong>Latitude:</strong> {house.latitude}</p>
-              <p><strong>Longitude:</strong> {house.nearest_shop_name}</p>
-            </div>
+      <Box sx={{ py: 4, px: { xs: 2, sm: 4 }, bgcolor: 'background.default' }}>
+        <Grid container spacing={3}>
+          {[1, 2, 3, 4, 5, 6].map((item) => (
+            <Grid item xs={12} sm={6} md={4} key={item}>
+              <Paper 
+                elevation={2} 
+                sx={{ 
+                  p: 3, 
+                  borderRadius: 3,
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}
+              >
+                <Box sx={{ height: 160, bgcolor: 'grey.200', borderRadius: 2, mb: 2 }} />
+                <Skeleton variant="text" height={32} sx={{ mb: 1 }} />
+                <Skeleton variant="text" height={24} width="60%" sx={{ mb: 1 }} />
+                <Skeleton variant="text" height={20} width="40%" />
+                <Box sx={{ mt: 'auto', pt: 2 }}>
+                  <Skeleton variant="text" height={24} width="80%" />
+                  <Skeleton variant="text" height={20} width="50%" />
+                </Box>
+              </Paper>
+            </Grid>
           ))}
-        </div>
-      </div>
+        </Grid>
+      </Box>
     );
+  }
+
+  // No results
+  if (!houses || houses.length === 0) {
+    return (
+      <Box 
+        sx={{ 
+          py: 8, 
+          px: 4, 
+          textAlign: 'center',
+          bgcolor: 'background.default',
+          borderRadius: 2
+        }}
+      >
+        <HomeIcon sx={{ fontSize: 60, color: 'text.secondary', mb: 2, opacity: 0.6 }} />
+        <Typography variant="h5" color="text.secondary" gutterBottom>
+          No properties found
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          Try adjusting your search criteria or explore a different area.
+        </Typography>
+      </Box>
+    );
+  }
+
+  return (
+    <Box sx={{ 
+      py: 4, 
+      px: { xs: 2, sm: 4 }, 
+      bgcolor: 'background.default'
+    }}>
+      
+      <Grid container spacing={3}>
+        {houses.map((house, index) => (
+          <Grid item xs={12} sm={6} md={4} key={index}>
+            <HouseTile house={house} />
+          </Grid>
+        ))}
+      </Grid>
+    </Box>
+  );
 };
+
 export default DisplayEnhancedSearch;

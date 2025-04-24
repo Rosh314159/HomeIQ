@@ -38,5 +38,4 @@ def get_latest_epc(postcode, house_number_or_name):
             epc_df = pd.DataFrame([values], columns=headers1)
             return epc_df
     except Exception as e:
-        print(f"Error fetching EPC data: {e}")
-        return pd.DataFrame()  # Return empty DataFrame on error
+        return(f"Error fetching EPC data: {e}")
