@@ -1,11 +1,14 @@
 import React from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
+import { Box, Paper, Typography, Grid, useTheme } from '@mui/material';
 
 // Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const MonthlyOutgoingsChart = ({ feasibilityData, houseData }) => {
+  const theme = useTheme();
+  
   // Extract and format data
   const costData = [
     feasibilityData?.monthly_payment || 0,
@@ -68,10 +71,25 @@ const MonthlyOutgoingsChart = ({ feasibilityData, houseData }) => {
   };
 
   return (
-    <div className="bg-white rounded shadow p-6">
-      <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+    <Paper 
+      elevation={1}
+      sx={{ 
+        p: 3, 
+        borderRadius: 1, 
+        bgcolor: 'background.paper'
+      }}
+    >
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', md: 'row' }, 
+          alignItems: 'center', 
+          justifyContent: 'space-between', 
+          gap: 3 
+        }}
+      >
         {/* Chart */}
-        <div className="w-full md:w-1/2">
+        <Box sx={{ width: '100%', maxWidth: { md: '50%' } }}>
           <Doughnut 
             data={monthlyCostsData} 
             options={{ 
@@ -91,32 +109,74 @@ const MonthlyOutgoingsChart = ({ feasibilityData, houseData }) => {
               },
             }} 
           />
-        </div>
+        </Box>
         
         {/* Summary */}
-        <div className="w-full md:w-1/2 flex flex-col space-y-4">
-          <div className="text-center p-4 bg-blue-50 rounded">
-            <p className="text-gray-500 text-sm mb-1">Total Monthly Outgoings</p>
-            <p className="text-3xl font-bold text-blue-600">£{totalMonthlyOutgoings}</p>
-          </div>
+        <Box 
+          sx={{ 
+            width: '100%', 
+            maxWidth: { md: '50%' },
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2
+          }}
+        >
+          <Box 
+            sx={{ 
+              textAlign: 'center', 
+              p: 2, 
+              bgcolor: theme.palette.primary.light, 
+              borderRadius: 1 
+            }}
+          >
+            <Typography 
+              variant="body2" 
+              color='white' 
+              sx={{ mb: 0.5 }}
+            >
+              Total Monthly Outgoings
+            </Typography>
+            <Typography 
+              variant="h4" 
+              sx={{ fontWeight: 'bold', color: theme.palette.primary.dark }}
+            >
+              £{totalMonthlyOutgoings}
+            </Typography>
+          </Box>
           
-          <div className="space-y-2">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             {costLabels.map((label, index) => (
-              <div key={index} className="flex justify-between border-b pb-2">
-                <div className="flex items-center">
-                  <div 
-                    className="w-3 h-3 rounded-full mr-2" 
-                    style={{ backgroundColor: monthlyCostsData.datasets[0].backgroundColor[index] }}
-                  ></div>
-                  <span className="text-sm">{label}</span>
-                </div>
-                <span className="font-medium">£{formattedData[index]}</span>
-              </div>
+              <Box 
+                key={index} 
+                sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  borderBottom: 1, 
+                  borderColor: 'divider', 
+                  pb: 1
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Box 
+                    sx={{
+                      width: 12, 
+                      height: 12, 
+                      borderRadius: '50%', 
+                      mr: 1,
+                      bgcolor: monthlyCostsData.datasets[0].backgroundColor[index]
+                    }}
+                  />
+                  <Typography variant="body2">{label}</Typography>
+                </Box>
+                <Typography variant="body2" fontWeight="medium">
+                  £{formattedData[index]}
+                </Typography>
+              </Box>
             ))}
-          </div>
-        </div>
-      </div>
-    </div>
+          </Box>
+        </Box>
+      </Box>
+    </Paper>
   );
 };
 

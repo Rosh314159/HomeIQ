@@ -1,167 +1,63 @@
-import React from "react";
-import {
-  Disclosure,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuItems,
-} from "@headlessui/react";
-import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
-
-const navigation = [
-  { name: "Home", href: "/", current: true },
-  { name: "Your Financial Data", href: "/your-financial-data", current: false },
-  { name: "Enhanced Search", href: "/search", current: false },
-  { name: "About", href: "/about", current: false }, // Added About page link
-];
-
-function classNames(...classes) {
-  return classes.filter(Boolean).join(" ");
-}
+import React from 'react';
+import { Link as RouterLink } from 'react-router-dom';
+import { 
+  AppBar, 
+  Toolbar, 
+  Typography, 
+  Button, 
+  Box
+} from '@mui/material';
+import HomeIcon from '@mui/icons-material/Home';
+import ClearDataButton from './ClearDataButton';
 
 const Navbar = () => {
-  // Function to clear all local storage
-  const clearAllData = () => {
-    localStorage.clear();
-    // Force a page refresh after clearing local storage
-    window.location.reload();
-    alert("All local storage data has been cleared");
-  };
-
+  // Navigation items
+  const navItems = [
+    { name: 'Home', path: '/' },
+    { name: 'Search', path: '/search' },
+    { name: 'Your Financial Data', path: '/your-financial-data' },
+    { name: 'About', path: '/about' }
+  ];
+  
   return (
-    <Disclosure as="nav" className="bg-gray-800">
-      {({ open }) => (
-        <>
-          <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
-            <div className="relative flex h-16 items-center justify-between">
-              <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
-                {/* Mobile menu button */}
-                <Disclosure.Button className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
-                  <span className="sr-only">Open main menu</span>
-                  {open ? (
-                    <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
-                  ) : (
-                    <Bars3Icon className="block h-6 w-6" aria-hidden="true" />
-                  )}
-                </Disclosure.Button>
-              </div>
-              <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-                <div className="hidden sm:ml-6 sm:block">
-                  <div className="flex space-x-4">
-                    {navigation.map((item) => (
-                      <a
-                        key={item.name}
-                        href={item.href}
-                        className={classNames(
-                          item.current
-                            ? "bg-gray-900 text-white"
-                            : "text-gray-300 hover:bg-gray-700 hover:text-white",
-                          "rounded-md px-3 py-2 text-sm font-medium"
-                        )}
-                        aria-current={item.current ? "page" : undefined}
-                      >
-                        {item.name}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-                {/* Clear All Data button */}
-                <button
-                  onClick={clearAllData}
-                  className="mr-3 rounded-md bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-800"
-                >
-                  Clear All Data
-                </button>
-
-                <Menu as="div" className="relative ml-3">
-                  <div>
-                    <Menu.Button className="flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
-                      <span className="sr-only">Open user menu</span>
-                      <img
-                        className="w-8 h-auto max-w-full"
-                        //src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7l5OQKSVfCDqx8sO0dZ4eYqIebfGZE6Ub7Q&s"
-                        alt=""
-                      />
-                    </Menu.Button>
-                  </div>
-                  <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                    <Menu.Item>
-                      {({ active }) => (
-                        <a
-                          href="#"
-                          className={classNames(
-                            active ? "bg-gray-100" : "",
-                            "block px-4 py-2 text-sm text-gray-700"
-                          )}
-                        >
-                          Your Profile
-                        </a>
-                      )}
-                    </Menu.Item>
-                    <Menu.Item>
-                      {({ active }) => (
-                        <a
-                          href="#"
-                          className={classNames(
-                            active ? "bg-gray-100" : "",
-                            "block px-4 py-2 text-sm text-gray-700"
-                          )}
-                        >
-                          Settings
-                        </a>
-                      )}
-                    </Menu.Item>
-                    <Menu.Item>
-                      {({ active }) => (
-                        <a
-                          href="#"
-                          className={classNames(
-                            active ? "bg-gray-100" : "",
-                            "block px-4 py-2 text-sm text-gray-700"
-                          )}
-                        >
-                          Sign out
-                        </a>
-                      )}
-                    </Menu.Item>
-                  </Menu.Items>
-                </Menu>
-              </div>
-            </div>
-          </div>
-
-          <Disclosure.Panel className="sm:hidden">
-            <div className="space-y-1 px-2 pb-3 pt-2">
-              {navigation.map((item) => (
-                <Disclosure.Button
-                  key={item.name}
-                  as="a"
-                  href={item.href}
-                  className={classNames(
-                    item.current
-                      ? "bg-gray-900 text-white"
-                      : "text-gray-300 hover:bg-gray-700 hover:text-white",
-                    "block rounded-md px-3 py-2 text-base font-medium"
-                  )}
-                  aria-current={item.current ? "page" : undefined}
-                >
-                  {item.name}
-                </Disclosure.Button>
-              ))}
-              {/* Clear All Data button for mobile menu */}
-              <button
-                onClick={clearAllData}
-                className="mt-1 w-full text-left rounded-md bg-red-600 px-3 py-2 text-base font-medium text-white hover:bg-red-700"
-              >
-                Clear All Data
-              </button>
-            </div>
-          </Disclosure.Panel>
-        </>
-      )}
-    </Disclosure>
+    <AppBar position="static" color="primary">
+      <Toolbar>
+        {/* Logo and brand name */}
+        <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+          <HomeIcon sx={{ mr: 1 }} />
+          <Typography 
+            variant="h6" 
+            component={RouterLink} 
+            to="/" 
+            sx={{ 
+              textDecoration: 'none',
+              color: 'white',
+              fontWeight: 600
+            }}
+          >
+            HomeIQ
+          </Typography>
+        </Box>
+        
+        {/* Navigation buttons */}
+        <Box sx={{ display: 'flex' }}>
+          {navItems.map((item) => (
+            <Button 
+              key={item.name}
+              component={RouterLink}
+              to={item.path}
+              color="inherit"
+              sx={{ mx: 1 }}
+            >
+              {item.name}
+            </Button>
+          ))}
+          
+          {/* Clear Data button component */}
+          <ClearDataButton buttonStyle={{ ml: 2 }} />
+        </Box>
+      </Toolbar>
+    </AppBar>
   );
 };
 

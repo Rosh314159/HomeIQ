@@ -1,9 +1,8 @@
 import React from "react";
-import './App.css';
+//import './App.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Home from "./pages/Home";
 import HouseDetails from "./pages/HouseDetails";
-import Browse from "./pages/Browse";
 import YourFinancialData from "./pages/YourFinancialData";
 import FeasibilityAssessment from "./components/FeasibilityAssessment";
 import UpdateFinancialData from "./components/UpdateFinancialData";
@@ -14,19 +13,19 @@ import theme from "./theme"; // Import the theme
 import { useEffect } from "react";
 const App = () => {
   //Clear localStorage when website is refreshed
-//   useEffect(() => {
-//     const handleTabClose = (event) => {
-//         // This ensures localStorage is cleared only on full website close, not refresh
-//         localStorage.clear();
-//     };
+  useEffect(() => {
+    const handleTabClose = (event) => {
+        // This ensures localStorage is cleared only on full website close, not refresh
+        localStorage.clear();
+    };
 
-//     // Attach event listener when the tab/window is closing
-//     window.addEventListener("beforeunload", handleTabClose);
+    // Attach event listener when the tab/window is closing
+    window.addEventListener("beforeunload", handleTabClose);
 
-//     return () => {
-//         window.removeEventListener("beforeunload", handleTabClose);
-//     };
-// }, []);
+    return () => {
+        window.removeEventListener("beforeunload", handleTabClose);
+    };
+}, []);
   return (
     <div className="App">
       <ThemeProvider theme={theme}>

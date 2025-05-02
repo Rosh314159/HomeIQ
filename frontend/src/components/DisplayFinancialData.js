@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Paper, Typography, Box, Divider, 
-  Skeleton, Chip, useTheme, Grid,
+  Skeleton, Chip, Grid,
   LinearProgress
 } from '@mui/material';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
@@ -14,7 +14,6 @@ import { useNavigate } from 'react-router-dom';
 const DisplayFinancialData = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const theme = useTheme();
   const navigate = useNavigate();
   
   // Format currency with commas
@@ -29,7 +28,6 @@ const DisplayFinancialData = () => {
   
   // Calculate mortgage affordability (simplified estimate)
   const calculateAffordability = (income, deposit) => {
-    // UK standard: ~4.5x annual income + deposit
     return Math.min(income * 4.5 + deposit, deposit * 20);
   };
 
@@ -51,7 +49,7 @@ const DisplayFinancialData = () => {
     fetchData();
   }, []);
 
-  // Loading state with nice skeleton effect
+  // Loading state with skeleton effect
   if (loading) {
     return (
       <Paper elevation={3} sx={{ 
@@ -86,7 +84,6 @@ const DisplayFinancialData = () => {
         p: 4, 
         borderRadius: 3,
         textAlign: "center",
-        background: 'linear-gradient(145deg, #ffffff 0%, #f9fafb 100%)'
       }}>
         <Typography variant="h5" color="textSecondary" gutterBottom>
           No Financial Information Found
@@ -124,7 +121,6 @@ const DisplayFinancialData = () => {
       borderRadius: 3,
       overflow: "hidden",
       position: "relative",
-      background: 'linear-gradient(145deg, #ffffff 0%, #f9fafb 100%)'
     }}>
       {/* Header */}
       <Box sx={{ 

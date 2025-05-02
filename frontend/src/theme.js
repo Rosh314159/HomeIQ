@@ -1,71 +1,54 @@
-// src/theme.js
-import { createTheme } from '@mui/material';
+import { createTheme } from '@mui/material/styles';
 
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#1f2937', // matches bg-gray-800 from the navbar
-      light: '#374151', // matches hover:bg-gray-700 from the navbar
-      dark: '#111827', // matches bg-gray-900 from the navbar
-      contrastText: '#ffffff',
+      main: '#2196f3', 
+      light: '#64b5f6',
+      dark: '#1976d2',
+      contrastText: '#fff',
     },
     secondary: {
-      main: '#dc2626', // matches bg-red-600 from the Clear All Data button
-      dark: '#b91c1c', // matches hover:bg-red-700
+      main: '#f50057', 
+      light: '#ff4081',
+      dark: '#c51162',
+      contrastText: '#fff',
     },
     background: {
-      default: '#f9fafb', // light gray background
+      default: '#f5f5f5',
       paper: '#ffffff',
     },
     text: {
-      primary: '#111827', // dark text matching the navbar's dark theme
-      secondary: '#6b7280', // gray-500 for secondary text
+      primary: 'rgba(0, 0, 0, 0.87)',
+      secondary: 'rgba(0, 0, 0, 0.6)',
     },
   },
-  typography: {
-    fontFamily: '"Inter", "Helvetica", "Arial", sans-serif',
-    h1: {
-      fontSize: '2rem',
-      fontWeight: 600,
-    },
-    h2: {
-      fontSize: '1.5rem',
-      fontWeight: 600,
-    },
-    h3: {
-      fontSize: '1.25rem',
-      fontWeight: 600,
-    },
-    button: {
-      textTransform: 'none',
-    }
+  shape: {
+    borderRadius: 8,
   },
   components: {
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          borderRadius: 8,
-          boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
-        },
-      },
-    },
     MuiButton: {
       styleOverrides: {
         root: {
-          textTransform: 'none',
-          borderRadius: 6,
-          fontWeight: 500,
+          textTransform: 'none', // Prevents all-caps buttons
         },
       },
     },
-    MuiAppBar: {
+    MuiCard: {
       styleOverrides: {
         root: {
-          backgroundColor: '#1f2937', // Match navbar color
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
         },
       },
     },
   },
+  typography: {
+    fontFamily: [
+      'Roboto',
+      'Arial',
+      'sans-serif'
+    ].join(','),
+  }
 });
 
 export default theme;

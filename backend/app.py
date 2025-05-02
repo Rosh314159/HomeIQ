@@ -1,4 +1,5 @@
 import json
+import os
 from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
@@ -10,33 +11,16 @@ from flask_cors import CORS
 from data_enricher import enrich_data
 from enhanced_search import search_houses
 import pandas as pd
-from models import db, House
+from models import db, House, School, Shop, TransportStop
 app = Flask(__name__)
 # Enable CORS for all routes
 CORS(app)
 #Initialise DB
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///houses.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///homeiq.db'
 db.init_app(app)
+
 with app.app_context():
     db.create_all()  # Ensure tables are created
-@app.route('/houses', methods=['GET'])
-def get_houses():
-    houses = House.query.order_by(func.random()).limit(100).all()  # Get a random sample of 100 houses
-    return jsonify([
-        {
-            'transaction_id': house.transaction_id,
-            'price': house.price,
-            'ask_price': house.ask_price,
-            'predicted_price': house.predicted_price,
-            'date_of_transfer': house.date_of_transfer,
-            'postcode': house.postcode,
-            'property_type': house.property_type,
-            'latitude': house.latitude,
-            'longitude': house.longitude
-        } for house in houses
-    ])
-
-
 
 @app.route('/fetch-and-enrich', methods=['POST'])
 def fetch_epc():
@@ -80,15 +64,16 @@ def predict_price():
         enriched_df = pd.DataFrame([enriched_data])
 
         # Predict the house price
-        predicted_price, shap_values, expected_value, features = predict_house_price(enriched_df)
+        predicted_price, expected_value, feature_values, feature_importance, local_avg_price = predict_house_price(enriched_df)
 
         # Return the predicted price
         response = {
             'status': 'success',
             'predicted_price': predicted_price,
-            'shap_values': shap_values,
             'expected_value': expected_value,
-            'features': features
+            'feature_values': feature_values,
+            'feature_importance': feature_importance,
+            'local_avg_price': local_avg_price
         }
         return jsonify(response)
 
@@ -143,5 +128,5 @@ def enhanced_search():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
-    app.run(host="0.0.0.0", port=10000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)

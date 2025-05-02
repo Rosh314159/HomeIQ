@@ -1,33 +1,64 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import {
+  Box,
+  Typography,
+  Paper,
+  Grid,
+  Button,
+  Alert,
+  AlertTitle,
+  Divider,
+  Tabs,
+  Tab,
+  Skeleton,
+  Chip,
+  Collapse,
+  useTheme
+} from "@mui/material";
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
+import InfoIcon from '@mui/icons-material/Info';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import MonthlyOutgoingsChart from './MonthlyOutgoingsChart';
 import RatioChart from './RatioChart';
 
-import { responsiveFontSizes } from "@mui/material";
-
-
-
-const FeasibilityAssessment = ( houseData ) => {
+const FeasibilityAssessment = (houseData) => {
   const [assessment, setAssessment] = useState(null);
   const [error, setError] = useState("");
   const [showInfo, setShowInfo] = useState(false);
-  const [activeTab, setActiveTab] = useState("outgoings");
+  const [activeTab, setActiveTab] = useState(0);
   const [loading, setLoading] = useState(true);
-  
   
   useEffect(() => {
     const fetchFeasibilityAssessment = async () => {
       try {
         setLoading(true);
         const userFinancialData = JSON.parse(localStorage.getItem("userFinancialData"));
-        //const houseData = JSON.parse(localStorage.getItem("houseData"));
+        
         console.log(houseData.data.predicted_price);
         if (!userFinancialData || !houseData) {
           setError("Missing user financial data or house details.");
           setLoading(false);
           return;
         }
+        
+        // Calculate monthly utility bills from house data or use default values
+        const calculateMonthlyUtilities = () => {
+          const waterCost = houseData.data?.host_water_cost_current || 0;
+          const heatingCost = houseData.data?.heating_cost_current || 0;
+          const lightingCost = houseData.data?.lighting_cost_current || 0; 
+          // If both values are missing, use default of 150
+          if (waterCost === 0 || lightingCost === 0 || heatingCost === 0) {
+            return 150;
+          }
+          
+          return waterCost + lightingCost + heatingCost;
+        };
 
+        // Get monthly utility bills
+        const monthlyUtilities = calculateMonthlyUtilities();
         // Construct inputs for feasibility assessment
         const systemInputs = {
           house_price: houseData.data.predicted_price,
@@ -35,7 +66,7 @@ const FeasibilityAssessment = ( houseData ) => {
           interest_rate: 3.5,
           property_tax: 200,
           insurance: 100,
-          utility_bills: 150,
+          utility_bills: monthlyUtilities,
         };
 
         const userInputs = {
@@ -62,9 +93,10 @@ const FeasibilityAssessment = ( houseData ) => {
     fetchFeasibilityAssessment();
   }, []);
 
-   // Toggle information panel
-   const toggleInfo = () => setShowInfo(!showInfo);
-   // Format currency
+  // Toggle information panel
+  const toggleInfo = () => setShowInfo(!showInfo);
+  
+  // Format currency
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('en-GB', { 
       style: 'currency', 
@@ -73,167 +105,305 @@ const FeasibilityAssessment = ( houseData ) => {
       maximumFractionDigits: 0 
     }).format(value);
   };
+
+  // Handle tab change
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+  };
+  
   // Loading state UI
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto p-6 bg-white shadow rounded">
-        <h2 className="text-2xl font-bold text-center mb-6">Feasibility Assessment</h2>
-        <div className="space-y-4">
-          <div className="bg-gray-200 h-8 w-full animate-pulse rounded"></div>
-          <div className="bg-gray-200 h-8 w-full animate-pulse rounded"></div>
-          <div className="bg-gray-200 h-8 w-full animate-pulse rounded"></div>
-          <div className="bg-gray-200 h-64 w-full animate-pulse rounded"></div>
-          <div className="bg-gray-200 h-64 w-full animate-pulse rounded"></div>
-        </div>
-      </div>
+      <Paper elevation={3} sx={{ maxWidth: '64rem', mx: 'auto', p: 3, borderRadius: 2 }}>
+        <Typography variant="h4" component="h2" align="center" sx={{ mb: 3, fontWeight: 'bold' }}>
+          Feasibility Assessment
+        </Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Skeleton variant="rectangular" height={32} animation="wave" />
+          <Skeleton variant="rectangular" height={32} animation="wave" />
+          <Skeleton variant="rectangular" height={32} animation="wave" />
+          <Skeleton variant="rectangular" height={256} animation="wave" />
+          <Skeleton variant="rectangular" height={256} animation="wave" />
+        </Box>
+      </Paper>
     );
   }
 
   // Error state UI
   if (error) {
     return (
-      <div className="max-w-4xl mx-auto p-6 bg-white shadow rounded">
-        <h2 className="text-2xl font-bold text-center mb-6">Feasibility Assessment</h2>
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          <p className="font-bold">Error</p>
-          <p>{error}</p>
-        </div>
-      </div>
+      <Paper elevation={3} sx={{ maxWidth: '64rem', mx: 'auto', p: 3, borderRadius: 2 }}>
+        <Typography variant="h4" component="h2" align="center" sx={{ mb: 3, fontWeight: 'bold' }}>
+          Feasibility Assessment
+        </Typography>
+        <Alert severity="error" variant="filled" sx={{ borderRadius: 1 }}>
+          <AlertTitle>Error</AlertTitle>
+          {error}
+        </Alert>
+      </Paper>
     );
   }
 
   // No assessment data
   if (!assessment) {
     return (
-      <div className="max-w-4xl mx-auto p-6 bg-white shadow rounded">
-        <h2 className="text-2xl font-bold text-center mb-6">Feasibility Assessment</h2>
-        <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded">
-          <p className="font-bold">No Data Available</p>
-          <p>We couldn't load the feasibility assessment. Please make sure you've entered all required information.</p>
-        </div>
-      </div>
+      <Paper elevation={3} sx={{ maxWidth: '64rem', mx: 'auto', p: 3, borderRadius: 2 }}>
+        <Typography variant="h4" component="h2" align="center" sx={{ mb: 3, fontWeight: 'bold' }}>
+          Feasibility Assessment
+        </Typography>
+        <Alert severity="info" sx={{ borderRadius: 1 }}>
+          <AlertTitle>No Data Available</AlertTitle>
+          We couldn't load the feasibility assessment. Please make sure you've entered all required information.
+        </Alert>
+      </Paper>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white shadow rounded">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-6">
-        {/* <h2 className="text-2xl font-bold">Feasibility Assessment</h2> */}
-        <div className="flex items-center gap-2">
+    <Paper elevation={3} sx={{ maxWidth: '64rem', mx: 'auto', p: 3, borderRadius: 2 }}>
+      <Box sx={{ 
+        display: 'flex', 
+        flexDirection: { xs: 'column', sm: 'row' }, 
+        alignItems: { sm: 'center' }, 
+        justifyContent: { sm: 'space-between' },
+        gap: 1, 
+        mb: 3 
+      }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           {assessment.is_affordable ? (
-            <div className="bg-green-100 text-green-800 py-1 px-3 rounded-full flex items-center gap-1 text-sm font-medium">
-              <span className="inline-block w-4 h-4 rounded-full bg-green-500 text-white text-xs flex items-center justify-center">✓</span>
-              Affordable
-            </div>
+            <Chip
+              icon={<CheckCircleIcon />}
+              label="Affordable"
+              color="success"
+              size="small"
+              sx={{ 
+                px: 1,
+                py: 0.5,
+                borderRadius: 16,
+                fontWeight: 500,
+                '& .MuiChip-icon': { fontSize: 16 }
+              }}
+            />
           ) : (
-            <div className="bg-red-100 text-red-800 py-1 px-3 rounded-full flex items-center gap-1 text-sm font-medium">
-              <span className="inline-block w-4 h-4 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">✗</span>
-              Not Affordable
-            </div>
+            <Chip
+              icon={<CancelIcon />}
+              label="Not Affordable"
+              color="error"
+              size="small"
+              sx={{ 
+                px: 1,
+                py: 0.5,
+                borderRadius: 16,
+                fontWeight: 500,
+                '& .MuiChip-icon': { fontSize: 16 }
+              }}
+            />
           )}
-        </div>
-      </div>
+        </Box>
+      </Box>
       
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-slate-50 p-4 rounded shadow-sm">
-          <p className="text-sm text-gray-500 mb-1">Monthly Payment</p>
-          <p className="text-2xl font-bold">{formatCurrency(assessment.monthly_payment)}</p>
-        </div>
-        <div className="bg-slate-50 p-4 rounded shadow-sm">
-          <p className="text-sm text-gray-500 mb-1">Total Housing Costs</p>
-          <p className="text-2xl font-bold">{formatCurrency(assessment.total_housing_costs)}</p>
-        </div>
-        <div className="bg-slate-50 p-4 rounded shadow-sm">
-          <p className="text-sm text-gray-500 mb-1">Monthly Income</p>
-          <p className="text-2xl font-bold">{formatCurrency(assessment.monthly_income || 0)}</p>
-        </div>
-      </div>
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid item xs={12} md={4}>
+          <Paper 
+            elevation={1}
+            sx={{ 
+              bgcolor: 'grey.50', 
+              p: 2, 
+              borderRadius: 1
+            }}
+          >
+            <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5 }}>
+              Monthly Payment
+            </Typography>
+            <Typography variant="h4" fontWeight="bold">
+              {formatCurrency(assessment.monthly_payment)}
+            </Typography>
+          </Paper>
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <Paper 
+            elevation={1}
+            sx={{ 
+              bgcolor: 'grey.50', 
+              p: 2, 
+              borderRadius: 1
+            }}
+          >
+            <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5 }}>
+              Total Housing Costs
+            </Typography>
+            <Typography variant="h4" fontWeight="bold">
+              {formatCurrency(assessment.total_housing_costs)}
+            </Typography>
+          </Paper>
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <Paper 
+            elevation={1}
+            sx={{ 
+              bgcolor: 'grey.50', 
+              p: 2, 
+              borderRadius: 1
+            }}
+          >
+            <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5 }}>
+              Monthly Income
+            </Typography>
+            <Typography variant="h4" fontWeight="bold">
+              {formatCurrency(assessment.monthly_income || 0)}
+            </Typography>
+          </Paper>
+        </Grid>
+      </Grid>
       
       {/* Information Toggle */}
-        <div className="mb-6">
-          <button 
-            onClick={toggleInfo} 
-            className="w-full flex items-center justify-between py-2 px-4 border border-blue-500 rounded bg-blue-500 text-white text-left"
-          >
-            <span className="flex items-center">
-          <span className="inline-block w-4 h-4 mr-2 text-white">ⓘ</span>
+      <Box sx={{ mb: 3 }}>
+        <Button 
+          onClick={toggleInfo} 
+          variant="contained"
+          color="primary"
+          fullWidth
+          startIcon={<InfoIcon />}
+          endIcon={showInfo ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          sx={{ 
+            justifyContent: 'space-between',
+            textAlign: 'left',
+            py: 1
+          }}
+        >
           How is feasibility calculated?
-            </span>
-            <span>{showInfo ? '▲' : '▼'}</span>
-          </button>
-          
-          {showInfo && (
-            <div className="mt-2 p-4 bg-blue-50 border border-blue-100 rounded text-sm">
-          <h3 className="font-semibold mb-2">Understanding Financial Ratios</h3>
-          
-          <div className="mb-3">
-            <p className="font-medium">Debt-to-Income Ratio (DTI)</p>
-            <p className="mb-1">Measures the proportion of your gross monthly income that goes toward debt payments.</p>
-            <p className="bg-slate-100 p-1 rounded text-xs mb-1">DTI = (Total Monthly Debt Payments / Gross Monthly Income) × 100%</p>
-            <p>Recommended: <span className="font-medium">below 36%</span>, Maximum: <span className="font-medium">43%</span> for mortgage approval.</p>
-          </div>
-          
-          <div className="mb-3">
-            <p className="font-medium">Loan-to-Value Ratio (LTV)</p>
-            <p className="mb-1">Compares the mortgage amount to the property's value.</p>
-            <p className="bg-slate-100 p-1 rounded text-xs mb-1">LTV = (Loan Amount / Property Value) × 100%</p>
-            <p>Preferred: <span className="font-medium">80% or lower</span>. Higher ratios may require PMI and result in higher rates.</p>
-          </div>
-          
-          <div>
-            <p className="font-medium">Mortgage-to-Income Ratio</p>
-            <p className="mb-1">Assesses how much you need to borrow compared to your yearly income.</p>
-            <p className="bg-slate-100 p-1 rounded text-xs mb-1">Mortgage-to-Income Ratio = Mortgage Amount / Yearly Income</p>
-            <p>Recommended: <span className="font-medium">28% or lower</span>. Higher ratios may indicate affordability issues.</p>
-          </div>
-            </div>
-          )}
-        </div>
+        </Button>
         
-        {/* Tabs for Charts */}
-      <div className="mb-6">
-        <div className="flex border-b">
-          <button 
-            className={`py-2 px-4 ${activeTab === "outgoings" ? "border-b-2 border-blue-500 text-white-600 font-medium" : "text-white-600"}`}
-            onClick={() => setActiveTab("outgoings")}
+        <Collapse in={showInfo}>
+          <Paper 
+            elevation={0}
+            sx={{ 
+              mt: 1, 
+              p: 2, 
+              bgcolor: 'primary.light', 
+              color: 'primary.contrastText',
+              border: 1, 
+              borderColor: 'primary.main',
+              borderRadius: 1, 
+              fontSize: '0.875rem'
+            }}
           >
-            Monthly Outgoings
-          </button>
-          <button 
-            className={`py-2 px-4 ${activeTab === "ratios" ? "border-b-2 border-blue-500 text-white-600 font-medium" : "text-white-600"}`}
-            onClick={() => setActiveTab("ratios")}
-          >
-            Financial Ratios
-          </button>
-        </div>
+            <Typography variant="subtitle1" fontWeight="medium" sx={{ mb: 1 }}>
+              Understanding Financial Ratios
+            </Typography>
+            
+            <Box sx={{ mb: 2 }}>
+              <Typography fontWeight="medium">Debt-to-Income Ratio (DTI)</Typography>
+              <Typography sx={{ mb: 0.5 }}>
+                Measures the proportion of your gross monthly income that goes toward debt payments.
+              </Typography>
+              <Box sx={{ p: 0.5, borderRadius: 1, mb: 0.5}}>
+                DTI = (Total Monthly Debt Payments / Gross Monthly Income) × 100%
+              </Box>
+              <Typography>
+                Recommended: <Box component="span" fontWeight="medium">below 36%</Box>, 
+                Maximum: <Box component="span" fontWeight="medium">43%</Box> for mortgage approval.
+              </Typography>
+            </Box>
+            
+            <Box sx={{ mb: 2 }}>
+              <Typography fontWeight="medium">Loan-to-Value Ratio (LTV)</Typography>
+              <Typography sx={{ mb: 0.5 }}>
+                Compares the mortgage amount to the property's value.
+              </Typography>
+              <Box sx={{ p: 0.5, borderRadius: 1, mb: 0.5 }}>
+                LTV = (Loan Amount / Property Value) × 100%
+              </Box>
+              <Typography>
+                Preferred: <Box component="span" fontWeight="medium">80% or lower</Box>. 
+                Higher ratios may require PMI and result in higher rates.
+              </Typography>
+            </Box>
+            
+            <Box>
+              <Typography fontWeight="medium">Mortgage-to-Income Ratio</Typography>
+              <Typography sx={{ mb: 0.5 }}>
+                Assesses how much you need to borrow compared to your yearly income.
+              </Typography>
+              <Box sx={{ p: 0.5, borderRadius: 1, mb: 0.5 }}>
+                Mortgage-to-Income Ratio = Mortgage Amount / Yearly Income
+              </Box>
+              <Typography>
+                Recommended: <Box component="span" fontWeight="medium">28% or lower</Box>. 
+                Higher ratios may indicate affordability issues.
+              </Typography>
+            </Box>
+          </Paper>
+        </Collapse>
+      </Box>
+      
+      {/* Tabs for Charts */}
+      <Box sx={{ mb: 3 }}>
+        <Tabs 
+          value={activeTab} 
+          onChange={handleTabChange} 
+          sx={{ 
+            borderBottom: 1, 
+            borderColor: 'divider',
+            '& .Mui-selected': {
+              color: 'primary.main',
+              fontWeight: 'medium'
+            }
+          }}
+        >
+          <Tab label="Monthly Outgoings" />
+          <Tab label="Financial Ratios" />
+        </Tabs>
         
-        <div className="mt-4">
-          {activeTab === "outgoings" && (
+        <Box sx={{ mt: 2 }}>
+          {activeTab === 0 && (
             <MonthlyOutgoingsChart feasibilityData={assessment} houseData={houseData.data} />
           )}
           
-          {activeTab === "ratios" && (
+          {activeTab === 1 && (
             <RatioChart feasibilityData={assessment} houseData={houseData.data} />
           )}
-        </div>
-      </div>
+        </Box>
+      </Box>
       
       {/* Recommendations */}
       {assessment.recommendations && assessment.recommendations.length > 0 && (
-        <div className="mt-6">
-          <h3 className="text-lg font-semibold mb-2">Recommendations</h3>
-          <div className={`p-4 rounded ${assessment.is_affordable ? "bg-yellow-50 border border-yellow-200" : "bg-red-50 border border-red-200"}`}>
-            <p className="font-bold mb-2">Action Required</p>
-            <ul className="list-disc pl-5 space-y-1">
+        <Box sx={{ mt: 3 }}>
+          <Typography variant="h6" fontWeight="medium" sx={{ mb: 1 }}>
+            Recommendations
+          </Typography>
+          <Paper 
+            elevation={0}
+            sx={{ 
+              p: 2, 
+              borderRadius: 1,
+              bgcolor: assessment.is_affordable ? 'warning.light' : 'error.light',
+              border: 1,
+              borderColor: assessment.is_affordable ? 'warning.main' : 'error.main'
+            }}
+          >
+            <Typography fontWeight="bold" sx={{ mb: 1 }}>
+              Action Required
+            </Typography>
+            <Box component="ul" sx={{ pl: 2.5, m: 0 }}>
               {assessment.recommendations.map((rec, index) => (
-                <li key={index} className={assessment.is_affordable ? "text-yellow-800" : "text-red-700"}>{rec}</li>
+                <Box 
+                  component="li" 
+                  key={index} 
+                  sx={{ 
+                    color: assessment.is_affordable ? 'warning.dark' : 'error.dark',
+                    mb: 0.5
+                  }}
+                >
+                  {rec}
+                </Box>
               ))}
-            </ul>
-          </div>
-        </div>
+            </Box>
+          </Paper>
+        </Box>
       )}
-    </div>
+    </Paper>
   );
 };
 

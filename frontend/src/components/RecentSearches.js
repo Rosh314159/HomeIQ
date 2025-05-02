@@ -43,7 +43,7 @@ const RecentSearches = () => {
                             onClick={() => handleRecentClick(house)}
                         >
                             <CardContent>
-                                <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+                                <Typography variant="body2"  align="center" sx={{ fontWeight: "bold" }}>
                                     {house.address1}
                                 </Typography>
                                 {/* <Typography variant="body2" color="primary">
@@ -52,7 +52,7 @@ const RecentSearches = () => {
                                 {/* <Typography variant="body2" color="primary">
                                     Floor Area: {house.total_floor_area}m<sup>2</sup>
                                 </Typography> */}
-                                <Typography variant="body2" color="primary">
+                                <Typography variant="body2" align="center" color="black">
                                     Predicted Price: £{Math.round(house.predicted_price)}
                                 </Typography>
                                 {/* <Typography variant="body2" color="primary">

@@ -17,6 +17,19 @@ def search_houses(search_params):
         nearest_secondary_school_distance = search_params.get("nearestSecondarySchoolDistance", -1)
         nearest_train_station_distance = search_params.get("nearestTrainStationDistance", -1)
 
+
+       # Map property types from frontend format to database format
+        property_type_mapping = {
+            "Detached": "D",
+            "Semi-Detached": "S",
+            "Terraced": "T",
+            "Flat": "F",
+            "Bungalow": "B"
+        }
+        # Handle property type as a single string value
+        mapped_property_type = None
+        if property_type != "" and property_type in property_type_mapping:
+            mapped_property_type = property_type_mapping[property_type]
         # Convert price fields safely
         try:
             price_min = int(price_min) if price_min else None
@@ -34,8 +47,8 @@ def search_houses(search_params):
             query = query.filter(House.predicted_price <= price_max)
         if postcode != "":
             query = query.filter(House.postcode.ilike(f"%{postcode}%"))
-        if property_type != "":
-            query = query.filter(House.property_type == property_type)
+        if mapped_property_type:
+             query = query.filter(House.property_type == mapped_property_type)
         if town_city != "":
             query = query.filter(House.town_city.ilike(f"%{town_city}%"))
         if undervalued == "undervalued":

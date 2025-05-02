@@ -24,7 +24,7 @@ const About = () => {
           How It Works
         </Typography>
         <Typography variant="body1" paragraph>
-          Our model uses a Random Forest algorithm trained on real property transaction and location data. 
+          Our model uses an XGBoost algorithm trained on real property transaction and location data. 
           When you submit a property for analysis, the model evaluates various features that influence 
           price (e.g., floor area, local average prices, distances to schools and transport) and predicts a likely value.
         </Typography>

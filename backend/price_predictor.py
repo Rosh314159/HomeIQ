@@ -1,73 +1,114 @@
+import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 from joblib import load  # To load your saved model
 import shap
-loaded = False
+import time
+
 DATA_PATH = 'C:\\Users\\rosh0\\cs\\HomeIQ\\backend\\data'
-def load_models():
-# Load the saved model, label encoders and dictionary of local authority average prices
-    print("loading models")
-    global model, label_encoder_property_type, average_price_per_local_authority
-    model = load(f'{DATA_PATH}\\house_price_model.joblib')
-    label_encoder_property_type = load(f'{DATA_PATH}\\property_type_encoder.joblib') 
-    average_price_per_local_authority = load(f'{DATA_PATH}\\average_price_per_local_authority.joblib')
-    global loaded
-    loaded = True
-    print("Finished loading models")
+
+# Global variables
+model_artifacts = None 
+
+def initialise():
+# Load the saved model artifacts
+    global model_artifacts
+    start_time = time.time()
+    
+    model_artifacts = load(f'{DATA_PATH}\\house_price_model_artifacts.joblib')
+   
+    load_time = time.time() - start_time
+    print(f"Models artifacts loaded in {load_time:.2f} seconds")
+
 def predict_house_price(data):
-    """
-    Predicts house price using the enriched data.
-    
-    Parameters:
-    epc_df (pd.DataFrame): The enriched DataFrame.
+   
+    if model_artifacts is None:
+        initialise()
 
-    Returns:
-    float: Predicted house price.
-    """ 
-    if not loaded:
-        load_models()
+    start_time = time.time()
 
-    # Define relevant columns for the model
-    relevant_columns = [
-        'age_in_years', 'postcode', 'property_type', 'local_authority_label', 
-        'total_floor_area', 'number_habitable_rooms', 'number_open_fireplaces',
-        'nearest_primary_school_distance', 'nearest_secondary_school_distance', 
-        'nearest_primary_school_outstanding', 'nearest_secondary_school_outstanding', 
-        'nearest_shop_distance', 'nearest_train_station_distance', 'nearest_bus_stop_distance'
-    ]
-    print("h")
-    # Select relevant columns
-    data = data[relevant_columns]
+    try:
+        # Extract components from model artifacts
+        model = model_artifacts['model']
+        label_encoders = model_artifacts['label_encoders']
+        feature_columns = model_artifacts['feature_columns']
+        kdtree = model_artifacts['kdtree']
+        train_prices = model_artifacts['train_prices']
+        shap_explainer = model_artifacts['shap_explainer']
+        
+        # Create input dataframe
+        input_df = pd.DataFrame(data)
 
-    new_column_names = [
-        'age_in_years', 'postcode', 'property_type', 'local-authority-label', 
-        'total-floor-area', 'number-habitable-rooms', 'number-open-fireplaces',
-        'nearest_primary_school_distance', 'nearest_secondary_school_distance', 
-        'nearest_primary_school_outstanding', 'nearest_secondary_school_outstanding', 
-        'nearest_shop_distance', 'nearest_train_station_distance', 'nearest_bus_stop_distance'
-    ]
+        # calculate local average price using KDTree
+        if 'latitude' in input_df.columns and 'longitude' in input_df.columns:
+            input_coords = input_df[['latitude', 'longitude']].astype(float).to_numpy()
+            _, indices = kdtree.query(input_coords, k=50) 
+            local_avg = np.array([train_prices[idx].mean() for idx in indices])
+            input_df['local_avg_price'] = local_avg[0] 
 
-    data.columns = new_column_names
-    X = data.copy()
-    
-    
-    X['average_price_in_area'] = X['local-authority-label'].map(average_price_per_local_authority)
-    print(X.columns)
-    # Encode categorical features
-    X['property_type_encoded'] = label_encoder_property_type.transform(X['property_type'])
-    print(X.columns)
-    # Drop original categorical columns
-    X = X.drop(columns=['postcode', 'local-authority-label', 'property_type', 'number-habitable-rooms'])
-    print(X.columns)
-    # Predict house price
-    predicted_price = model.predict(X)
-     # Explain the prediction using SHAP
-    rf_model = model.named_steps['regressor']
-    imputer = model.named_steps['imputer']
-    scaler = model.named_steps['scaler']
-    X_preprocessed = scaler.transform(imputer.transform(X))
-    explainer = shap.TreeExplainer(rf_model)
-    shap_values = explainer.shap_values(X_preprocessed)
-    # Return predicted price and shap info
-    return float(predicted_price[0]), shap_values[0].tolist(), float(explainer.expected_value), X.iloc[0].to_dict()
+        #get relevant columns
+        input_df = input_df[feature_columns]
+
+        # Initialize missing columns with NaN
+        for col in feature_columns:
+            if col not in input_df.columns and col != 'local_avg_price':
+                input_df[col] = np.nan
+        #Handle categorical features with label encoding
+        for col, encoder in label_encoders.items():
+            if col in input_df.columns:
+                # Fill missing values
+                input_df[col] = input_df[col].fillna('Unknown')
+                
+                # Handle unseen categories
+                for cat in input_df[col].unique():
+                    if cat not in encoder.classes_:
+                        input_df.loc[input_df[col] == cat, col] = 'Unknown'
+                
+                # Apply encoding
+                input_df[col] = encoder.transform(input_df[col])
+        
+        # Convert numeric columns that may have been imported as objects
+        numeric_columns = ['total_floor_area', 'multi_glaze_proportion', 'number_open_fireplaces']
+        for col in numeric_columns:
+            if col in input_df.columns and input_df[col].dtype == 'object':
+                # Replace any non-numeric values with NaN, then convert to float
+                input_df[col] = pd.to_numeric(input_df[col], errors='coerce')
+                # Fill NaN values with 0 or another appropriate value
+                input_df[col] = input_df[col].fillna(0)
+
+        # Reordering input features to match training data
+        input_df = input_df[model_artifacts['feature_columns']]
+        print(model_artifacts['feature_columns'])
+        # Get prediction
+        predicted_price = model_artifacts['model'].predict(input_df)[0]
+
+        # Get SHAP values (ensures aligned with model's expected features)
+        shap_values = model_artifacts['shap_explainer'](input_df)
+        explainer = shap.Explainer(model_artifacts['model'])
+        shap_values = explainer(input_df)
+        # Processing SHAP values
+        feature_importance = {}
+        for i, feature in enumerate(model_artifacts['feature_columns']):
+            feature_importance[feature] = float(shap_values.values[0][i])
+        
+        # Keep raw feature values
+        feature_values = input_df.iloc[0].to_dict()
+
+        # Predict
+        predicted_price = model.predict(input_df)[0]
+
+        # SHAP explanation
+        shap_values = shap_explainer(input_df)
+        print(feature_values)
+
+        local_avg_price = input_df['local_avg_price']
+    except Exception:
+        # Catch anything and raise a uniform error
+        raise Exception("Prediction on this house could not occur")
+
+    finally:
+        duration = time.time() - start_time
+        print(f"Prediction completed in {duration:.2f} seconds")
+
+    return float(predicted_price), float(shap_explainer.expected_value), feature_values, feature_importance, local_avg_price.item()
 

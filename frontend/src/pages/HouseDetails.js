@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Box, Container, Grid, Button, Typography, CssBaseline } from '@mui/material';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { Box, Container, Grid, Button, Typography } from '@mui/material';
 
 // Import custom components
 import HouseRecommendations from "../components/HouseRecommendation";
@@ -28,174 +27,7 @@ import TrainIcon from '@mui/icons-material/Train';
 import PaidIcon from '@mui/icons-material/Paid';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
-// Create theme with improved typography
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#1976d2',
-      light: '#4791db',
-      dark: '#115293',
-    },
-    secondary: {
-      main: '#7b1fa2',
-      light: '#9c27b0',
-      dark: '#6a1b9a',
-    },
-    success: {
-      main: '#2e7d32',
-      light: '#4caf50',
-      dark: '#1b5e20',
-    },
-    error: {
-      main: '#d32f2f',
-      light: '#ef5350',
-      dark: '#c62828',
-    },
-    warning: {
-      main: '#ed6c02',
-      light: '#ff9800',
-      dark: '#e65100',
-    },
-    background: {
-      default: '#f9fafb',
-      paper: '#ffffff',
-    },
-    text: {
-      primary: '#1e293b',
-      secondary: '#64748b',
-    },
-  },
-  typography: {
-    fontFamily: [
-      'Inter',
-      '"Segoe UI"',
-      'Roboto',
-      '"Helvetica Neue"',
-      'Arial',
-      'sans-serif',
-    ].join(','),
-    h1: {
-      fontWeight: 800,
-      fontSize: '2.5rem',
-      letterSpacing: '-0.01em',
-    },
-    h2: {
-      fontWeight: 700,
-      fontSize: '2rem',
-      letterSpacing: '-0.01em',
-    },
-    h3: {
-      fontWeight: 700,
-      fontSize: '1.5rem',
-      letterSpacing: '-0.01em',
-    },
-    h4: {
-      fontWeight: 700,
-      fontSize: '1.25rem',
-      letterSpacing: '-0.01em',
-    },
-    h5: {
-      fontWeight: 600,
-      fontSize: '1.1rem',
-    },
-    h6: {
-      fontWeight: 600,
-      fontSize: '1rem',
-    },
-    subtitle1: {
-      fontSize: '1rem',
-      fontWeight: 500,
-    },
-    subtitle2: {
-      fontSize: '0.875rem',
-      fontWeight: 500,
-    },
-    body1: {
-      fontSize: '1rem',
-      lineHeight: 1.5,
-    },
-    body2: {
-      fontSize: '0.875rem',
-      lineHeight: 1.5,
-    },
-    button: {
-      fontWeight: 600,
-      textTransform: 'none',
-      fontSize: '0.875rem',
-    },
-    caption: {
-      fontSize: '0.75rem',
-      lineHeight: 1.5,
-    },
-  },
-  shape: {
-    borderRadius: 12,
-  },
-  shadows: [
-    'none',
-    '0px 2px 4px rgba(0, 0, 0, 0.05)',
-    '0px 4px 8px rgba(0, 0, 0, 0.05)',
-    '0px 8px 16px rgba(0, 0, 0, 0.05)',
-    '0px 12px 24px rgba(0, 0, 0, 0.05)',
-    // ... rest of shadows remain default
-    ...Array(20).fill(''),
-  ],
-  components: {
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          textTransform: 'none',
-          borderRadius: 12,
-          fontWeight: 600,
-          boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
-          transition: 'all 0.2s ease-in-out',
-          '&:hover': {
-            transform: 'translateY(-2px)',
-            boxShadow: '0px 6px 12px rgba(0, 0, 0, 0.15)',
-          },
-        },
-        containedPrimary: {
-          background: 'linear-gradient(135deg, #1976d2 0%, #2196f3 100%)',
-        },
-        containedSecondary: {
-          background: 'linear-gradient(135deg, #7b1fa2 0%, #9c27b0 100%)',
-        },
-      },
-    },
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          borderRadius: 16,
-          boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.08)',
-          transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
-          '&:hover': {
-            transform: 'translateY(-4px)',
-            boxShadow: '0px 8px 30px rgba(0, 0, 0, 0.12)',
-          },
-        },
-      },
-    },
-    MuiPaper: {
-      styleOverrides: {
-        rounded: {
-          borderRadius: 16,
-        },
-        elevation1: {
-          boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.08)',
-        },
-      },
-    },
-    MuiTypography: {
-      styleOverrides: {
-        root: {
-          '&.MuiTypography-h1, &.MuiTypography-h2, &.MuiTypography-h3, &.MuiTypography-h4, &.MuiTypography-h5, &.MuiTypography-h6': {
-            color: '#1e293b',
-          },
-        },
-      },
-    },
-  },
-});
+
 
 const HouseDetails = () => {
   const location = useLocation();
@@ -241,32 +73,23 @@ const HouseDetails = () => {
     saveRecentSearch();
     window.scrollTo(0, 0);
     
-    // Add Google Fonts for improved typography
-    const linkElement = document.createElement('link');
-    linkElement.rel = 'stylesheet';
-    linkElement.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap';
-    document.head.appendChild(linkElement);
-    
-    return () => {
-      document.head.removeChild(linkElement);
-    };
   }, [enrichedData]);
   
-  // Helper function to get color based on Ofsted rating
-  const getRatingColor = (rating) => {
-    switch(rating) {
-      case 4:
-        return theme.palette.success.main; // Outstanding - Green
-      case 3:
-        return theme.palette.success.light; // Good - Light Green
-      case 2: 
-        return theme.palette.warning.main;  // Requires Improvement - Orange
-      case 1:
-        return theme.palette.error.main;    // Inadequate - Red
-      default:
-        return theme.palette.grey[500];     // Unknown - Grey
-    }
-  };
+ // Helper function to get color based on Ofsted rating - using named colors
+const getRatingColor = (rating) => {
+  switch(rating) {
+    case 4:
+      return 'green';       // Outstanding
+    case 3:
+      return 'lightgreen';  // Good
+    case 2: 
+      return 'orange';      // Requires Improvement
+    case 1:
+      return 'red';         // Inadequate
+    default:
+      return 'gray';        // Unknown
+  }
+};
   
   const getOfstedRating = (rating) => {
     switch(rating) {
@@ -285,7 +108,6 @@ const HouseDetails = () => {
 
   if (!enrichedData) {
     return (
-      <ThemeProvider theme={theme}>
         <Box 
           display="flex" 
           flexDirection="column" 
@@ -323,17 +145,14 @@ const HouseDetails = () => {
             </Button>
           </Box>
         </Box>
-      </ThemeProvider>
     );
   }
   
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
       <Box minHeight="100vh" bgcolor="background.default">
         <Navbar />
         
-        {/* Use PropertyHeader component */}
+        {/*Propertyh eader */}
         <PropertyHeader 
           property={enrichedData} 
           onBack={() => navigate("/")}
@@ -386,7 +205,7 @@ const HouseDetails = () => {
               <PropertySection 
                 title="Property Overview" 
                 icon={<HomeIcon />} 
-                bgcolor={theme.palette.primary.main}
+                bgcolor="dodgerblue"
                 elevation={3}
               >
                 <Box component="ul" sx={{ p: 0, m: 0, listStyle: 'none' }}>
@@ -419,7 +238,7 @@ const HouseDetails = () => {
               <PropertySection 
                 title="Energy Efficiency" 
                 icon={<EnergySavingsLeafIcon />} 
-                bgcolor={theme.palette.success.main}
+                bgcolor="green"
                 elevation={3}
               >
                 <EnergyRating
@@ -436,12 +255,12 @@ const HouseDetails = () => {
               <PropertySection 
                 title="Nearby Amenities" 
                 icon={<LocationOnIcon />} 
-                bgcolor={theme.palette.warning.main}
+                bgcolor="orange"
                 elevation={3}
               >
                 <Box component="ul" sx={{ p: 0, m: 0, listStyle: 'none' }}>
                   <PropertyListItem
-                    icon={<ShoppingBagIcon sx={{ color: theme.palette.warning.main }} />}
+                    icon={<ShoppingBagIcon sx={{ color: "orange" }} />}
                     primary="Nearest Shop"
                     secondary={
                       <Box>
@@ -453,17 +272,17 @@ const HouseDetails = () => {
                     }
                   />
                   <PropertyListItem
-                    icon={<DirectionsBusIcon sx={{ color: theme.palette.warning.main }} />}
+                    icon={<DirectionsBusIcon sx={{ color: "orange" }} />}
                     primary="Bus Stop"
                     secondary={`${enrichedData.nearest_bus_stop_distance.toFixed(2)} km away`}
                   />
                   <PropertyListItem
-                    icon={<TrainIcon sx={{ color: theme.palette.warning.main }} />}
+                    icon={<TrainIcon sx={{ color: "orange" }} />}
                     primary="Train Station"
                     secondary={`${enrichedData.nearest_train_station_distance.toFixed(2)} km away`}
                   />
                   <PropertyListItem
-                    icon={<SchoolIcon sx={{ color: theme.palette.warning.main }} />}
+                    icon={<SchoolIcon sx={{ color: "orange" }} />}
                     primary="Schools"
                     secondary={
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
@@ -475,7 +294,6 @@ const HouseDetails = () => {
                           borderRadius: 2,
                           p: 1.5,
                           bgcolor: 'rgba(255, 152, 0, 0.08)',
-                          border: '1px solid rgba(255, 152, 0, 0.2)',
                         }}>
                           <Box flex={1}>
                             <Typography variant="body2" fontWeight={600}>{enrichedData.primary_school_name}</Typography>
@@ -507,7 +325,7 @@ const HouseDetails = () => {
                           borderRadius: 2,
                           p: 1.5,
                           bgcolor: 'rgba(255, 152, 0, 0.08)',
-                          border: '1px solid rgba(255, 152, 0, 0.2)',
+                          
                         }}>
                           <Box flex={1}>
                             <Typography variant="body2" fontWeight={600}>{enrichedData.secondary_school_name}</Typography>
@@ -542,7 +360,7 @@ const HouseDetails = () => {
               <PropertySection 
                 title="Running Costs" 
                 icon={<PaidIcon />} 
-                bgcolor={theme.palette.error.main}
+                bgcolor="crimson"
                 elevation={3}
               >
                 <RunningCosts
@@ -568,12 +386,6 @@ const HouseDetails = () => {
                 px: 6,
                 py: 1.8, 
                 fontSize: '1rem',
-                background: 'linear-gradient(135deg, #7b1fa2 0%, #e91e63 100%)',
-                boxShadow: '0px 8px 16px rgba(123, 31, 162, 0.25)',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, #6a1b9a 0%, #d81b60 100%)',
-                  boxShadow: '0px 12px 20px rgba(123, 31, 162, 0.35)',
-                }
               }}
               onClick={() => { window.scrollTo({top:0}); navigate("/"); }}
             >
@@ -582,14 +394,14 @@ const HouseDetails = () => {
           </Box>
         </Container>
         
-        {/* Use FeasibilityModal component */}
+        {/* Feasibility  */}
         <FeasibilityModal 
           isOpen={isFeasibilityOpen}
           onClose={() => setIsFeasibilityOpen(false)}
           propertyData={enrichedData}
         />
         
-        {/* Use RecommendationModal component */}
+        {/* Recommendations */}
         <RecommendationModal 
           isOpen={isRecommendationOptionOpen}
           onClose={() => setIsRecommendationOptionOpen(false)}
@@ -598,12 +410,11 @@ const HouseDetails = () => {
           onGetRecommendations={handleGetRecommendations}
         />
         
-        {/* Recommendations Section */}
+        {/* display recs at bottom of page */}
         <Box id="recommendations-section">
           {showRecommendations && <HouseRecommendations houseAttributes={enrichedData} options={options} />}
         </Box>
       </Box>
-    </ThemeProvider>
   );
 };
 

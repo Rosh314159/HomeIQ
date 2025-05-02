@@ -1,11 +1,9 @@
 import React from 'react';
-import { Box, Typography, Paper, Grid, Skeleton, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Typography, Paper, Grid, Skeleton } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import HouseTile from './HouseTile';
 
 const DisplayEnhancedSearch = ({ houses, loading = false }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // Loading placeholder
   if (loading) {

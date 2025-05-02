@@ -9,7 +9,7 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import HomeIcon from '@mui/icons-material/Home';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-
+import config from '../config';
 const HouseSearch = () => {
   const [postcode, setPostcode] = useState("");
   const [addresses, setAddresses] = useState([]);
@@ -62,7 +62,7 @@ const HouseSearch = () => {
       const houseNumber = selectedAddress.split(",")[0];
 
       // Step 1: Fetch enriched data
-      const enrichResponse = await axios.post("http://localhost:5000/fetch-and-enrich", {
+      const enrichResponse = await axios.post(`${config.API_URL}/fetch-and-enrich`, {
         postcode,
         house_number_or_name: houseNumber,
       });
@@ -72,7 +72,7 @@ const HouseSearch = () => {
 
         // Step 2: Predict house price using enriched data
         try {
-          const predictResponse = await fetch("http://localhost:5000/predict-price", {
+          const predictResponse = await fetch(`${config.API_URL}/predict-price`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ enriched_data: enrichedData }),
@@ -81,9 +81,10 @@ const HouseSearch = () => {
           const result = await predictResponse.json();
           if (result.status === "success") {
             enrichedData.predicted_price = result.predicted_price;
-            enrichedData.shap_values = result.shap_values;
+            enrichedData.feature_values = result.feature_values;
             enrichedData.expected_value = result.expected_value;
-            enrichedData.features = result.features;
+            enrichedData.feature_importance = result.feature_importance;
+            enrichedData.local_avg_price = result.local_avg_price;
             // Navigate to the details page with enriched data and predicted price
             setLoading(false);
             navigate("/details", { state: { enrichedData } });

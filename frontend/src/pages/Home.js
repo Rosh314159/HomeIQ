@@ -16,7 +16,7 @@ export default function Home() {
     <>
       <Box sx={{ position: 'relative' }}>
         <NavBar />
-        <Container maxWidth="lg" sx={{ mt: 0, pb: 0 }}>
+        <Container maxWidth="lg" sx={{ mt: 3, pb: 0 }}>
           <Box sx={{ position: 'relative' }}>
             <HouseSearch onEnrichedDataFetched={handleEnrichedDataFetched} />
             {enrichedData && <PricePredictor enrichedData={enrichedData} />}

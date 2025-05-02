@@ -10,6 +10,15 @@ import {
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import annotationPlugin from 'chartjs-plugin-annotation';
+import {
+  Box,
+  Paper,
+  Typography,
+  Grid,
+  useTheme
+} from '@mui/material';
+import CheckIcon from '@mui/icons-material/Check';
+import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
 
 // Register Chart.js components and annotation plugin
 ChartJS.register(
@@ -23,16 +32,18 @@ ChartJS.register(
 );
 
 const RatioChart = ({ feasibilityData }) => {
+  const theme = useTheme();
+  
   // Extract ratio values
   const dtiRatio = parseFloat(feasibilityData.dti_ratio) || 0;
   const ltvRatio = parseFloat(feasibilityData.ltv_ratio) || 0;
   const mortgageToIncomeRatio = parseFloat(feasibilityData.mortgage_to_income_ratio) || 0;
 
-  // Define threshold values
+ 
   const thresholds = {
-    dti: 36, // Recommended maximum DTI threshold (%)
-    ltv: 95, // Recommended maximum LTV threshold (%)
-    mortgageToIncome: 4.5, // Recommended maximum Mortgage-to-Income ratio
+    dti: 36, // maxi DTI threshold
+    ltv: 95, //  max LTV threshold
+    mortgageToIncome: 4.5, 
   };
 
   // Check if each ratio exceeds its threshold
@@ -47,10 +58,9 @@ const RatioChart = ({ feasibilityData }) => {
     'Mortgage-to-Income',
   ];
 
-  // Ratio values
   const ratioValues = [dtiRatio, ltvRatio, mortgageToIncomeRatio];
 
-  // Maximum values to display on the chart (for better visualization)
+  // Maximum values to display on the chart
   const maxValues = {
     dti: Math.max(dtiRatio, thresholds.dti) * 1.2,
     ltv: Math.max(ltvRatio, thresholds.ltv) * 1.2,
@@ -61,8 +71,8 @@ const RatioChart = ({ feasibilityData }) => {
   const getBarColor = (index, value) => {
     const thresholdValues = [thresholds.dti, thresholds.ltv, thresholds.mortgageToIncome];
     return value > thresholdValues[index] 
-      ? 'rgba(239, 68, 68, 0.7)' // Red for exceeding threshold
-      : 'rgba(34, 197, 94, 0.7)'; // Green for within threshold
+      ? 'red' 
+      : 'green';
   };
 
   // Configure the data for the chart
@@ -162,73 +172,183 @@ const RatioChart = ({ feasibilityData }) => {
   };
 
   return (
-    <div className="bg-white rounded shadow p-6">
-      <div className="flex flex-col lg:flex-row items-start gap-6">
+    <Paper 
+      elevation={1}
+      sx={{ 
+        p: 3, 
+        borderRadius: 1, 
+        bgcolor: 'background.paper'
+      }}
+    >
+      <Grid container spacing={3} alignItems="flex-start">
         {/* Chart */}
-        <div className="w-full lg:w-2/3">
+        <Grid item xs={12} lg={8}>
           <Bar data={ratioData} options={ratioOptions} height={180} />
-        </div>
+        </Grid>
         
         {/* Key Indicators */}
-        <div className="w-full lg:w-1/3 space-y-4">
-          <div className={`p-4 rounded ${isDtiRatioExceeded ? 'bg-red-50' : 'bg-green-50'}`}>
-            <div className="flex items-center gap-2">
-              <div className={`h-5 w-5 rounded-full flex items-center justify-center ${isDtiRatioExceeded ? 'bg-red-500' : 'bg-green-500'}`}>
-                <span className="text-white text-xs">{isDtiRatioExceeded ? '!' : '✓'}</span>
-              </div>
-              <h4 className="font-semibold">Debt-to-Income</h4>
-            </div>
-            <div className="mt-2">
-              <p className="text-xl font-bold">{dtiRatio.toFixed(1)}%</p>
-              <p className="text-sm text-gray-600">
-                Threshold: {thresholds.dti}%
-                {isDtiRatioExceeded && 
-                  <span className="text-red-500 block mt-1">Exceeds recommended maximum</span>
-                }
-              </p>
-            </div>
-          </div>
-          
-          <div className={`p-4 rounded ${isLtvRatioExceeded ? 'bg-red-50' : 'bg-green-50'}`}>
-            <div className="flex items-center gap-2">
-              <div className={`h-5 w-5 rounded-full flex items-center justify-center ${isLtvRatioExceeded ? 'bg-red-500' : 'bg-green-500'}`}>
-                <span className="text-white text-xs">{isLtvRatioExceeded ? '!' : '✓'}</span>
-              </div>
-              <h4 className="font-semibold">Loan-to-Value</h4>
-            </div>
-            <div className="mt-2">
-              <p className="text-xl font-bold">{ltvRatio.toFixed(1)}%</p>
-              <p className="text-sm text-gray-600">
-                Threshold: {thresholds.ltv}%
-                {isLtvRatioExceeded && 
-                  <span className="text-red-500 block mt-1">May require PMI & higher rates</span>
-                }
-              </p>
-            </div>
-          </div>
-          
-          <div className={`p-4 rounded ${isMortgageToIncomeRatioExceeded ? 'bg-red-50' : 'bg-green-50'}`}>
-            <div className="flex items-center gap-2">
-              <div className={`h-5 w-5 rounded-full flex items-center justify-center ${isMortgageToIncomeRatioExceeded ? 'bg-red-500' : 'bg-green-500'}`}>
-                <span className="text-white text-xs">{isMortgageToIncomeRatioExceeded ? '!' : '✓'}</span>
-              </div>
-              <h4 className="font-semibold">Mortgage-to-Income Ratio</h4>
-            </div>
-            <div className="mt-2">
-              <p className="text-xl font-bold">{mortgageToIncomeRatio.toFixed(1)}</p>
-              <p className="text-sm text-gray-600">
-                Threshold: {thresholds.mortgageToIncome}
-                {isMortgageToIncomeRatioExceeded && 
-                  <span className="text-red-500 block mt-1">Potential affordability issues</span>
-                }
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+        <Grid item xs={12} lg={4}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {/* DTI Ratio */}
+            <Paper 
+              elevation={0}
+              sx={{ 
+                p: 2, 
+                borderRadius: 1, 
+                bgcolor: isDtiRatioExceeded ? 'error.light' : 'success.light' 
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box 
+                  sx={{ 
+                    height: 20, 
+                    width: 20, 
+                    borderRadius: '50%', 
+                    bgcolor: isDtiRatioExceeded ? 'error.main' : 'success.main',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  {isDtiRatioExceeded ? (
+                    <PriorityHighIcon sx={{ color: 'white', fontSize: '0.75rem' }} />
+                  ) : (
+                    <CheckIcon sx={{ color: 'white', fontSize: '0.75rem' }} />
+                  )}
+                </Box>
+                <Typography variant="subtitle2" fontWeight="medium">
+                  Debt-to-Income
+                </Typography>
+              </Box>
+              <Box sx={{ mt: 1 }}>
+                <Typography variant="h5" fontWeight="bold">
+                  {dtiRatio.toFixed(1)}%
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Threshold: {thresholds.dti}%
+                </Typography>
+                {isDtiRatioExceeded && (
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      color: 'error.main', 
+                      mt: 0.5 
+                    }}
+                  >
+                    Exceeds recommended maximum
+                  </Typography>
+                )}
+              </Box>
+            </Paper>
+
+            {/* LTV Ratio */}
+            <Paper 
+              elevation={0}
+              sx={{ 
+                p: 2, 
+                borderRadius: 1, 
+                bgcolor: isLtvRatioExceeded ? 'error.light' : 'success.light' 
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box 
+                  sx={{ 
+                    height: 20, 
+                    width: 20, 
+                    borderRadius: '50%', 
+                    bgcolor: isLtvRatioExceeded ? 'error.main' : 'success.main',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  {isLtvRatioExceeded ? (
+                    <PriorityHighIcon sx={{ color: 'white', fontSize: '0.75rem' }} />
+                  ) : (
+                    <CheckIcon sx={{ color: 'white', fontSize: '0.75rem' }} />
+                  )}
+                </Box>
+                <Typography variant="subtitle2" fontWeight="medium">
+                  Loan-to-Value
+                </Typography>
+              </Box>
+              <Box sx={{ mt: 1 }}>
+                <Typography variant="h5" fontWeight="bold">
+                  {ltvRatio.toFixed(1)}%
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Threshold: {thresholds.ltv}%
+                </Typography>
+                {isLtvRatioExceeded && (
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      color: 'error.main', 
+                      mt: 0.5 
+                    }}
+                  >
+                    May require PMI & higher rates
+                  </Typography>
+                )}
+              </Box>
+            </Paper>
+
+            {/* Mortgage-to-Income Ratio */}
+            <Paper 
+              elevation={0}
+              sx={{ 
+                p: 2, 
+                borderRadius: 1, 
+                bgcolor: isMortgageToIncomeRatioExceeded ? 'error.light' : 'success.light' 
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box 
+                  sx={{ 
+                    height: 20, 
+                    width: 20, 
+                    borderRadius: '50%', 
+                    bgcolor: isMortgageToIncomeRatioExceeded ? 'error.main' : 'success.main',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  {isMortgageToIncomeRatioExceeded ? (
+                    <PriorityHighIcon sx={{ color: 'white', fontSize: '0.75rem' }} />
+                  ) : (
+                    <CheckIcon sx={{ color: 'white', fontSize: '0.75rem' }} />
+                  )}
+                </Box>
+                <Typography variant="subtitle2" fontWeight="medium">
+                  Mortgage-to-Income Ratio
+                </Typography>
+              </Box>
+              <Box sx={{ mt: 1 }}>
+                <Typography variant="h5" fontWeight="bold">
+                  {mortgageToIncomeRatio.toFixed(1)}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Threshold: {thresholds.mortgageToIncome}
+                </Typography>
+                {isMortgageToIncomeRatioExceeded && (
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      color: 'error.main', 
+                      mt: 0.5 
+                    }}
+                  >
+                    Potential affordability issues
+                  </Typography>
+                )}
+              </Box>
+            </Paper>
+          </Box>
+        </Grid>
+      </Grid>
+    </Paper>
   );
 };
 
 export default RatioChart;
-

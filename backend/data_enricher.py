@@ -4,16 +4,10 @@ from scipy.spatial import cKDTree
 import numpy as np
 import re
 from joblib import load
+from models import School, Shop, TransportStop, db
 
 # Global variables to store preloaded data
 initialised = False
-DATA_PATH = 'C:\\Users\\rosh0\\cs\\HomeIQ\\backend\\data'
-postcodeToLatLong = None
-schools_df = None
-primary_schools = None
-secondary_schools = None
-shopsData = None
-transportData = None
 primary_tree = None
 secondary_tree = None
 shops_tree = None
@@ -24,6 +18,11 @@ secondary_coords = None
 shopCoords = None
 stationCoords = None
 stopCoords = None
+primary_schools = None
+secondary_schools = None
+shopsData = None
+train_stations = None
+bus_stops = None
 
 # Initialize and preload data
 
@@ -35,51 +34,41 @@ def initialize_data():
     #Skip initalisation if already done
     if initialised:
         return 
-    print("here")
-    # Load static data
-    postcodeToLatLong = pd.read_csv(f'{DATA_PATH}\\ukpostcodes.csv')
-    schools_df = pd.read_csv(f'{DATA_PATH}\\2022-2023_england_school_information.csv', encoding='ISO-8859-1')
-    shopsData = pd.read_csv(f'{DATA_PATH}\\geolytix_retailpoints_v33_202408.csv')
-    transportData = pd.read_csv(f'{DATA_PATH}\\Stops.csv')
+    print("Loading data from database")
 
-    # Prepare schools data
-    schools_df.columns = schools_df.columns.str.lower()
-    schools_df = schools_df.merge(postcodeToLatLong, on='postcode', how='left')
-    schools_df = schools_df.dropna(subset=['latitude', 'longitude'])
-    schools_df.columns = schools_df.columns.str.lower()
-    primary_schools = schools_df[schools_df['isprimary'] == 1]
-    secondary_schools = schools_df[schools_df['issecondary'] == 1]
+    # Load schools from database
+    all_schools = pd.read_sql('SELECT * FROM school', db.engine)
+    primary_schools = all_schools[all_schools['is_primary'] == True]
+    secondary_schools = all_schools[all_schools['is_secondary'] == True]
     primary_coords = primary_schools[['latitude', 'longitude']].to_numpy()
     secondary_coords = secondary_schools[['latitude', 'longitude']].to_numpy()
 
-    # Load KDTree models
-    # Build a KDTree with school coordinates
+    # Load shops from database
+    shopsData = pd.read_sql('SELECT * FROM shop', db.engine)
+    shopCoords = shopsData[['latitude', 'longitude']].to_numpy()
+
+    # Load transport stops from database
+    transport_stops = pd.read_sql('SELECT * FROM transport_stop', db.engine)
+    train_stations = transport_stops[transport_stops['stop_type'] == 'RSE']
+    stationCoords = train_stations[['latitude', 'longitude']].to_numpy()
+    bus_stops = transport_stops[transport_stops['stop_type'].str.startswith('B')]
+    stopCoords = bus_stops[['latitude', 'longitude']].to_numpy()
+
+    # Build KDTrees for spatial querying
     primary_tree = cKDTree(primary_coords)
     secondary_tree = cKDTree(secondary_coords)
-    shops_tree = load(f'{DATA_PATH}\\shops_tree.joblib')
-    station_tree = load(f'{DATA_PATH}\\station_tree.joblib')
-    stops_tree = load(f'{DATA_PATH}\\stops_tree.joblib')
-
-    # Prepare shop coordinates
-    shopsData = shopsData[shopsData['size_band'] != '< 3,013 ft2 (280m2)']
-    shopCoords = shopsData[['lat_wgs', 'long_wgs']].to_numpy()
-
-    # Prepare transport data
-    trainStations = transportData[transportData['StopType'] == 'RSE'].dropna(subset=['Latitude', 'Longitude'])
-    stationCoords = trainStations[['Latitude', 'Longitude']].to_numpy()
-
-    busStops = transportData[transportData['StopType'].str.startswith('B')].dropna(subset=['Latitude', 'Longitude'])
-    stopCoords = busStops[['Latitude', 'Longitude']].to_numpy()
+    shops_tree = cKDTree(shopCoords)
+    station_tree = cKDTree(stationCoords)
+    stops_tree = cKDTree(stopCoords)
     
     initialised = True
+    print("Finished loading data from database")
+
 # Utility functions
 
 def extract_area_code(postcode):
     match = re.match(r"^[A-Za-z]+", postcode)
     return match.group(0) if match else None
-
-def enrich_long_lat(epc_df):
-    return epc_df.merge(postcodeToLatLong, on='postcode', how='left')
 
 def enrich_schools(epc_df):
     def getOfstedRating(ofsted_rating):
@@ -95,13 +84,13 @@ def enrich_schools(epc_df):
             if school == 'primary':
                 distance, index = primary_tree.query(house_location, k=1)
                 nearest_school_distance = geodesic(house_location, primary_coords[index]).kilometers
-                nearest_school_ofsted = getOfstedRating(primary_schools.iloc[index]['ofstedrating'])
-                school_name = primary_schools.iloc[index]['schname']
+                nearest_school_ofsted = getOfstedRating(primary_schools.iloc[index]['ofsted_rating'])
+                school_name = primary_schools.iloc[index]['name']
             else:
                 distance, index = secondary_tree.query(house_location, k=1)
                 nearest_school_distance = geodesic(house_location, secondary_coords[index]).kilometers
-                nearest_school_ofsted = getOfstedRating(secondary_schools.iloc[index]['ofstedrating'])
-                school_name = secondary_schools.iloc[index]['schname']
+                nearest_school_ofsted = getOfstedRating(secondary_schools.iloc[index]['ofsted_rating'])
+                school_name = secondary_schools.iloc[index]['name']
             return nearest_school_distance, nearest_school_ofsted, school_name
         except Exception as e:
             return np.nan, np.nan, None
@@ -184,7 +173,6 @@ def enrich_age(epc_df):
 
 def enrich_data(epc_df):
     initialize_data()
-    epc_df = enrich_long_lat(epc_df)
     epc_df = enrich_schools(epc_df)
     epc_df = enrich_shops(epc_df)
     epc_df = enrich_trains(epc_df)

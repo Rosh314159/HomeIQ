@@ -17,13 +17,15 @@ import {
   Typography,
   Alert,
   Snackbar,
+  Radio,
+  Stack
 } from "@mui/material";
 
 const EnhancedSearchFields = () => {
   const [searchCriteria, setSearchCriteria] = useState({
     priceMin: 0,
     priceMax: 1000000,
-    propertyType: [],
+    propertyType: "",
     postcode: "",
     newBuild: "",
     townCity: "",
@@ -84,10 +86,10 @@ const EnhancedSearchFields = () => {
       };
 
       console.log(financialData.annual_income);
-      // If "Only Show Houses I Can Afford" is checked, add affordability filtering
+      // add affordability filtering
       if (searchCriteria.onlyAffordable && financialData) {
         console.log("Here");
-        adjustedCriteria.onlyAffordable = true; // Example affordability rule (4x income)
+        adjustedCriteria.onlyAffordable = true;
         adjustedCriteria.annual_income = financialData.annual_income;
         adjustedCriteria.debt_obligations = financialData.debt_obligations;
         adjustedCriteria.deposit_amount = financialData.savings;
@@ -119,36 +121,76 @@ const EnhancedSearchFields = () => {
 
   if (searchResults.length > 0) {
     return (
-      <div>
-        <DisplayEnhancedSearch houses={searchResults} />
+      <Box>
         {/* Pagination Controls */}
-        <div className="flex justify-between mt-4">
-        <button
-           onClick={() => {
-             setCurrentPage((prev) => {
-               const newPage = Number(prev) - 1;
-               handleSearch(newPage); // Use newPage immediately
-               return newPage
-             });
-           }}
-          className={`px-4 py-2 bg-gray-300 rounded-lg shadow-md ${currentPage > 1 ? "hover:bg-gray-400" : "opacity-50 cursor-not-allowed"}`}
-        >
-          Previous
-        </button>
-        <button
-          onClick={() => {
-            setCurrentPage((prev) => {
-              const newPage = Number(prev) + 1;
-              handleSearch(newPage); // Use newPage immediately
-              return newPage;
-            });
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          mt: 4 
+        }}>
+          <Button
+            variant="contained"
+            color="inherit"
+            onClick={() => {
+              setCurrentPage((prev) => {
+                const newPage = Number(prev) - 1;
+                handleSearch(newPage);
+                return newPage
+              });
+            }}
+            disabled={currentPage <= 1}
+            sx={{ 
+              px: 2, 
+              py: 1,
+              bgcolor: 'grey.300',
+              borderRadius: 2,
+              boxShadow: 1,
+              '&:hover': {
+                bgcolor: 'grey.400'
+              },
+              '&.Mui-disabled': {
+                opacity: 0.5,
+              }
+            }}
+          >
+            Previous
+          </Button>
+          {/* Page Number Display */}
+        <Typography 
+          variant="body1" 
+          sx={{ 
+            fontWeight: 'medium',
+            bgcolor: 'grey.100',
+            px: 2,
+            py: 1,
+            borderRadius: 1,
+            boxShadow: 1
           }}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700"
         >
-          Next
-        </button>
-        </div>
-    </div>
+          Page {currentPage}
+        </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              setCurrentPage((prev) => {
+                const newPage = Number(prev) + 1;
+                handleSearch(newPage);
+                return newPage;
+              });
+            }}
+            sx={{ 
+              px: 2, 
+              py: 1,
+              borderRadius: 2,
+              boxShadow: 1
+            }}
+          >
+            Next
+          </Button>
+        </Box>
+        <DisplayEnhancedSearch houses={searchResults} />
+      </Box>
     )
   }
   return (
@@ -211,19 +253,16 @@ const EnhancedSearchFields = () => {
               Property Type
             </Typography>
             <Grid container spacing={1}>
-              {["Detached", "Semi-Detached", "Terraced", "Flat", "Bungalow"].map((type) => (
+              {["Detached", "Semi-Detached", "Terraced", "Flat"].map((type) => (
                 <Grid item key={type}>
                   <FormControlLabel
                     control={
-                      <Checkbox
-                        checked={searchCriteria.propertyType.includes(type)}
-                        onChange={(e) => {
-                          const { checked } = e.target;
+                      <Radio
+                        checked={searchCriteria.propertyType === type}
+                        onChange={() => {
                           setSearchCriteria((prev) => ({
                             ...prev,
-                            propertyType: checked
-                              ? [...prev.propertyType, type]
-                              : prev.propertyType.filter((t) => t !== type),
+                            propertyType: type,
                           }));
                         }}
                       />
