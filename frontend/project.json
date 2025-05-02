@@ -1,0 +1,10 @@
+{
+    "name": "homeiq-frontend",
+    "version": "1.0.0",
+    "buildCommand": "npm run build",
+    "outputDirectory": "build",
+    "framework": "create-react-app",
+    "rewrites": [
+      { "source": "/(.*)", "destination": "/index.html" }
+    ]
+  }

@@ -14,7 +14,7 @@ import pandas as pd
 from models import db, House, School, Shop, TransportStop
 app = Flask(__name__)
 # Enable CORS for all routes
-CORS(app)
+CORS(app, origins=["https://homeiq-5uvola3g6-rosh314159s-projects.vercel.app", "http://localhost:3000"])
 #Initialise DB
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///homeiq.db'
 db.init_app(app)
