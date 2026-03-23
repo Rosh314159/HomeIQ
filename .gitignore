@@ -50,3 +50,5 @@ logs/
 tests/
 .coverage
 coverage/
+
+backend/data
