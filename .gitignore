@@ -28,12 +28,13 @@ logs/
 *.log
 
 # ML models
-
+*.joblib
 
 # Data files
 *.csv
 *.xlsx
 *.json.gz
+*.db
 
 # Media files
 *.jpg
