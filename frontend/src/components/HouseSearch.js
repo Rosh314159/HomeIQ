@@ -34,10 +34,10 @@ const HouseSearch = () => {
     try {
       const key = process.env.REACT_APP_POSTCODE_API;
       const response = await axios.get(
-        `https://api.getAddress.io/autocomplete/${postcode}?api-key=${key}`
+        `https://api.ideal-postcodes.co.uk/v1/autocomplete/addresses?query=${postcode}&api_key=${key}`
       );
       console.log(response);
-      const filteredAddresses = response.data.suggestions.map(suggestion => suggestion.address);
+      const filteredAddresses = response.data.result.hits.map(hit => hit.suggestion);
       setAddresses(filteredAddresses || []);
       setLoading(false);
       setSearchStage("address");
