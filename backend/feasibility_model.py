@@ -86,6 +86,7 @@ def get_feasibility(system_inputs, user_inputs):
     monthly_income = annual_income / 12
     loan_amount = max(0, house_price - savings)
     ltv_ratio = max(0, (loan_amount / house_price) * 100)
+    monthly_utility_bills = utility_bills / 12
     
     #Change interest rate based on LTV ratio (data from Rightmove)
     if ltv_ratio >= 0.90:
@@ -101,9 +102,9 @@ def get_feasibility(system_inputs, user_inputs):
 
     monthly_payment = calculate_monthly_payment(loan_amount, interest_rate, loan_term_years)
     stamp_duty = calculate_stamp_duty(house_price, is_first_home)
-    total_housing_costs = monthly_payment + utility_bills
+    total_housing_costs_monthly = monthly_payment + monthly_utility_bills
 
-    dti_ratio = (debt_obligations + total_housing_costs) / monthly_income * 100
+    dti_ratio = (debt_obligations + total_housing_costs_monthly) / monthly_income * 100
     
     mortgage_to_income_ratio = loan_amount / annual_income
     meets_mortgage_income_threshold = mortgage_to_income_ratio <= 4.5
@@ -113,7 +114,7 @@ def get_feasibility(system_inputs, user_inputs):
     # Bills-to-income check: total monthly housing bills must be < 50% of post-tax income
     annual_post_tax_income = calculate_post_tax_income(annual_income)
     monthly_post_tax_income = annual_post_tax_income / 12
-    bills_to_income_ratio = (total_housing_costs / monthly_post_tax_income) * 100 if monthly_post_tax_income > 0 else 100
+    bills_to_income_ratio = (total_housing_costs_monthly / monthly_post_tax_income) * 100 if monthly_post_tax_income > 0 else 100
     meets_bills_to_income = bills_to_income_ratio < 50
 
     is_affordable = meets_dti_ratio and meets_mortgage_income_threshold and meets_ltv_threshold and meets_bills_to_income
@@ -130,7 +131,7 @@ def get_feasibility(system_inputs, user_inputs):
 
     return {
         'monthly_payment': round(monthly_payment, 2),
-        'total_housing_costs': round(total_housing_costs, 2),
+        'total_housing_costs': round(total_housing_costs_monthly, 2),
         'stamp_duty': round(stamp_duty, 2),
         'dti_ratio': round(dti_ratio, 2),
         'ltv_ratio': round(ltv_ratio, 2),

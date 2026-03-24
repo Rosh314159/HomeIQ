@@ -231,7 +231,7 @@ const FeasibilityAssessment = (houseData) => {
             }}
           >
             <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5 }}>
-              Total Housing Costs
+              Total Monthly Housing Costs
             </Typography>
             <Typography variant="h4" fontWeight="bold">
               {formatCurrency(assessment.total_housing_costs)}
