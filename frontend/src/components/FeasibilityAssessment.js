@@ -53,7 +53,7 @@ const FeasibilityAssessment = (houseData) => {
           if (waterCost === 0 || lightingCost === 0 || heatingCost === 0) {
             return 150;
           }
-          
+          console.log(`Calculated monthly utilities: Water: £${waterCost}, Heating: £${heatingCost}, Lighting: £${lightingCost}`);
           return waterCost + lightingCost + heatingCost;
         };
 
