@@ -1,6 +1,47 @@
 import numpy as np
 import math
 
+# Helper function to calculate UK post-tax annual income (Income Tax + National Insurance)
+def calculate_post_tax_income(annual_salary):
+    # UK Income Tax bands (2025/26)
+    personal_allowance = 12570
+    basic_rate_limit = 50270
+    higher_rate_limit = 125140
+
+    # Personal allowance tapers by £1 for every £2 earned over £100,000
+    if annual_salary > 100000:
+        reduction = min(personal_allowance, (annual_salary - 100000) / 2)
+        effective_personal_allowance = personal_allowance - reduction
+    else:
+        effective_personal_allowance = personal_allowance
+
+    # Income Tax calculation
+    taxable_income = max(0, annual_salary - effective_personal_allowance)
+    income_tax = 0
+
+    basic_band = max(0, basic_rate_limit - effective_personal_allowance)
+    higher_band = higher_rate_limit - basic_rate_limit
+
+    if taxable_income <= basic_band:
+        income_tax = taxable_income * 0.20
+    elif taxable_income <= basic_band + higher_band:
+        income_tax = basic_band * 0.20 + (taxable_income - basic_band) * 0.40
+    else:
+        income_tax = basic_band * 0.20 + higher_band * 0.40 + (taxable_income - basic_band - higher_band) * 0.45
+
+    # National Insurance (Class 1 employee, 2025/26)
+    ni_primary_threshold = 12570
+    ni_upper_earnings_limit = 50270
+    national_insurance = 0
+
+    if annual_salary > ni_primary_threshold:
+        ni_basic = min(annual_salary, ni_upper_earnings_limit) - ni_primary_threshold
+        national_insurance = ni_basic * 0.08
+        if annual_salary > ni_upper_earnings_limit:
+            national_insurance += (annual_salary - ni_upper_earnings_limit) * 0.02
+
+    return annual_salary - income_tax - national_insurance
+
 # Helper function to calculate monthly mortgage payment
 def calculate_monthly_payment(principal, annual_rate, term_years):
     monthly_rate = annual_rate / 12 / 100
@@ -68,8 +109,14 @@ def get_feasibility(system_inputs, user_inputs):
     meets_mortgage_income_threshold = mortgage_to_income_ratio <= 4.5
     meets_ltv_threshold = ltv_ratio <= 95
     meets_dti_ratio = dti_ratio < 36
-    is_affordable = meets_dti_ratio and meets_mortgage_income_threshold and meets_ltv_threshold
-    
+
+    # Bills-to-income check: total monthly housing bills must be < 50% of post-tax income
+    annual_post_tax_income = calculate_post_tax_income(annual_income)
+    monthly_post_tax_income = annual_post_tax_income / 12
+    bills_to_income_ratio = (total_housing_costs / monthly_post_tax_income) * 100 if monthly_post_tax_income > 0 else 100
+    meets_bills_to_income = bills_to_income_ratio < 50
+
+    is_affordable = meets_dti_ratio and meets_mortgage_income_threshold and meets_ltv_threshold and meets_bills_to_income
 
     recommendations = []
     if not meets_mortgage_income_threshold:
@@ -78,6 +125,8 @@ def get_feasibility(system_inputs, user_inputs):
         recommendations.append("Increase your deposit to lower the loan-to-value ratio.")
     if not meets_dti_ratio:
         recommendations.append("You have exceeded the debt to income ratio - lower your monthly debt or increase monthly income")
+    if not meets_bills_to_income:
+        recommendations.append("Your total monthly housing bills (mortgage, water, heating and lighting) exceed 50% of your post-tax income - consider a cheaper property or increase your deposit to reduce mortgage payments")
 
     return {
         'monthly_payment': round(monthly_payment, 2),
@@ -86,10 +135,13 @@ def get_feasibility(system_inputs, user_inputs):
         'dti_ratio': round(dti_ratio, 2),
         'ltv_ratio': round(ltv_ratio, 2),
         'mortgage_to_income_ratio': round(mortgage_to_income_ratio, 2),
+        'bills_to_income_ratio': round(bills_to_income_ratio, 2),
         'is_affordable': is_affordable,
         'meets_ltv_threshold': meets_ltv_threshold,
         'meets_mortgage_income_threshold': meets_mortgage_income_threshold,
+        'meets_bills_to_income': meets_bills_to_income,
         'recommendations': recommendations,
         'monthly_debt_obligations': debt_obligations,
-        'monthly_income': monthly_income
+        'monthly_income': monthly_income,
+        'monthly_post_tax_income': round(monthly_post_tax_income, 2)
     }

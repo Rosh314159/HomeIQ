@@ -38,38 +38,43 @@ const RatioChart = ({ feasibilityData }) => {
   const dtiRatio = parseFloat(feasibilityData.dti_ratio) || 0;
   const ltvRatio = parseFloat(feasibilityData.ltv_ratio) || 0;
   const mortgageToIncomeRatio = parseFloat(feasibilityData.mortgage_to_income_ratio) || 0;
+  const billsToIncomeRatio = parseFloat(feasibilityData.bills_to_income_ratio) || 0;
 
  
   const thresholds = {
     dti: 36, // maxi DTI threshold
     ltv: 95, //  max LTV threshold
     mortgageToIncome: 4.5, 
+    billsToIncome: 50,
   };
 
   // Check if each ratio exceeds its threshold
   const isDtiRatioExceeded = dtiRatio > thresholds.dti;
   const isLtvRatioExceeded = ltvRatio > thresholds.ltv;
   const isMortgageToIncomeRatioExceeded = mortgageToIncomeRatio > thresholds.mortgageToIncome;
+  const isBillsToIncomeExceeded = billsToIncomeRatio >= thresholds.billsToIncome;
 
   // Labels for each financial ratio
   const ratioLabels = [
     'Debt-to-Income',
     'Loan-to-Value',
     'Mortgage-to-Income',
+    'Bills-to-Income',
   ];
 
-  const ratioValues = [dtiRatio, ltvRatio, mortgageToIncomeRatio];
+  const ratioValues = [dtiRatio, ltvRatio, mortgageToIncomeRatio, billsToIncomeRatio];
 
   // Maximum values to display on the chart
   const maxValues = {
     dti: Math.max(dtiRatio, thresholds.dti) * 1.2,
     ltv: Math.max(ltvRatio, thresholds.ltv) * 1.2,
     mortgageToIncome: Math.max(mortgageToIncomeRatio, thresholds.mortgageToIncome) * 1.2,
+    billsToIncome: Math.max(billsToIncomeRatio, thresholds.billsToIncome) * 1.2,
   };
 
   // Determine bar colors based on threshold comparison
   const getBarColor = (index, value) => {
-    const thresholdValues = [thresholds.dti, thresholds.ltv, thresholds.mortgageToIncome];
+    const thresholdValues = [thresholds.dti, thresholds.ltv, thresholds.mortgageToIncome, thresholds.billsToIncome];
     return value > thresholdValues[index] 
       ? 'red' 
       : 'green';
@@ -126,7 +131,7 @@ const RatioChart = ({ feasibilityData }) => {
           label: function(context) {
             const index = context.dataIndex;
             const value = context.parsed.x;
-            const thresholdValue = [thresholds.dti, thresholds.ltv, thresholds.mortgageToIncome][index];
+            const thresholdValue = [thresholds.dti, thresholds.ltv, thresholds.mortgageToIncome, thresholds.billsToIncome][index];
             return [
               `Value: ${value.toFixed(1)}%`,
               `Threshold: ${thresholdValue}%`
@@ -162,6 +167,16 @@ const RatioChart = ({ feasibilityData }) => {
             xMax: thresholds.mortgageToIncome,
             yMin: 1.6,
             yMax: 2.4,
+            borderColor: 'rgba(239, 68, 68, 0.8)',
+            borderWidth: 2,
+            borderDash: [5, 5],
+          },
+          billsToIncomeThreshold: {
+            type: 'line',
+            xMin: thresholds.billsToIncome,
+            xMax: thresholds.billsToIncome,
+            yMin: 2.6,
+            yMax: 3.4,
             borderColor: 'rgba(239, 68, 68, 0.8)',
             borderWidth: 2,
             borderDash: [5, 5],
@@ -340,6 +355,58 @@ const RatioChart = ({ feasibilityData }) => {
                     }}
                   >
                     Potential affordability issues
+                  </Typography>
+                )}
+              </Box>
+            </Paper>
+
+            {/* Bills-to-Income Ratio */}
+            <Paper 
+              elevation={0}
+              sx={{ 
+                p: 2, 
+                borderRadius: 1, 
+                bgcolor: isBillsToIncomeExceeded ? 'error.light' : 'success.light' 
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box 
+                  sx={{ 
+                    height: 20, 
+                    width: 20, 
+                    borderRadius: '50%', 
+                    bgcolor: isBillsToIncomeExceeded ? 'error.main' : 'success.main',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  {isBillsToIncomeExceeded ? (
+                    <PriorityHighIcon sx={{ color: 'white', fontSize: '0.75rem' }} />
+                  ) : (
+                    <CheckIcon sx={{ color: 'white', fontSize: '0.75rem' }} />
+                  )}
+                </Box>
+                <Typography variant="subtitle2" fontWeight="medium">
+                  Bills-to-Income
+                </Typography>
+              </Box>
+              <Box sx={{ mt: 1 }}>
+                <Typography variant="h5" fontWeight="bold">
+                  {billsToIncomeRatio.toFixed(1)}%
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Threshold: {thresholds.billsToIncome}%
+                </Typography>
+                {isBillsToIncomeExceeded && (
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      color: 'error.main', 
+                      mt: 0.5 
+                    }}
+                  >
+                    Housing bills exceed 50% of post-tax income
                   </Typography>
                 )}
               </Box>

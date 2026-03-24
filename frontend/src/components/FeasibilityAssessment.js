@@ -334,6 +334,21 @@ const FeasibilityAssessment = (houseData) => {
                 Higher ratios may indicate affordability issues.
               </Typography>
             </Box>
+            
+            <Box sx={{ mt: 2 }}>
+              <Typography fontWeight="medium">Bills-to-Income Ratio</Typography>
+              <Typography sx={{ mb: 0.5 }}>
+                Checks whether your total monthly housing bills (mortgage, water, heating and lighting) 
+                are affordable relative to your take-home pay after UK Income Tax and National Insurance.
+              </Typography>
+              <Box sx={{ p: 0.5, borderRadius: 1, mb: 0.5 }}>
+                Bills-to-Income = (Monthly Mortgage + Water + Heating + Lighting) / Monthly Post-Tax Income × 100%
+              </Box>
+              <Typography>
+                Must be: <Box component="span" fontWeight="medium">below 50%</Box>. 
+                Exceeding this means housing costs take up too large a share of your net income.
+              </Typography>
+            </Box>
           </Paper>
         </Collapse>
       </Box>
