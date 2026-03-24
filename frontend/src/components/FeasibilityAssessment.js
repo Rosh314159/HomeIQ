@@ -46,7 +46,7 @@ const FeasibilityAssessment = (houseData) => {
         
         // Calculate monthly utility bills from house data or use default values
         const calculateMonthlyUtilities = () => {
-          const waterCost = houseData.data?.host_water_cost_current || 0;
+          const waterCost = houseData.data?.hot_water_cost_current || 0;
           const heatingCost = houseData.data?.heating_cost_current || 0;
           const lightingCost = houseData.data?.lighting_cost_current || 0; 
           // If both values are missing, use default of 150
