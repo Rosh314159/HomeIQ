@@ -11,27 +11,41 @@ Speaker notes for each slide. Target total duration: ~15 minutes.
 
 ---
 
-## Slide 2: The Problem & Motivation
-**[~1 minute]**
+## Slide 2: The Problem
+**[~45 seconds]**
 
-"So the problem. If you've ever tried to buy a house in the UK, you know the experience is fragmented. Energy performance data sits on one government portal. School quality is on the Ofsted website. Transport links need a separate search. And whether the asking price is fair? You're basically guessing.
+"So the problem. If you've ever tried to buy a house in the UK, you know the experience is fragmented. Energy data, school ratings, transport links, and prices all sit on different websites. There's no way to tell if an asking price is actually fair. And affordability checks mean pulling out a spreadsheet and hoping for the best.
 
-Affordability is worse. Most people pull out a spreadsheet, plug in some rough numbers, and hope for the best. For the biggest financial decision most people make, the tooling is really poor.
-
-The insight behind HomeIQ is that all of this data already exists in public datasets. EPC certificates, Land Registry sale prices, Ofsted ratings, transport stop coordinates. What if we fused all of it, trained a model to predict fair market value, and wrapped it in a platform where you can search a property, see its predicted price with explanations for why the model thinks that, and check if you can actually afford the mortgage based on real UK lending criteria?
-
-That's what this project does, in two phases. Phase 1 was the ML research: building the dataset and training the model. Phase 2 was the web platform: Flask API and React frontend."
+The thing is, all of this data already exists publicly. Nobody has joined it together into something useful."
 
 ---
 
-## Slide 3: Section Header - ML Development
+## Slide 3: Existing Solutions
+**[~45 seconds]**
+
+"There are existing platforms, of course. Rightmove and Zoopla between them have over 100 million monthly users. They list properties for sale, some offer price prediction algorithms, and they link out to third-party mortgage calculators. You can look up most houses on the market.
+
+But there are real gaps. None of them integrate with your actual financial data. There are no personalised house recommendations. The mortgage calculators are external tools with their own privacy concerns. And the property details are often limited, especially around things like energy performance, nearby schools, or transport access."
+
+---
+
+## Slide 4: Proposed Solution
+**[~45 seconds]**
+
+"So what I built is HomeIQ. It's a web application that predicts house prices using diverse public datasets and evaluates affordability using the user's own financial data. It also gives personalised house recommendations and helps users make data-driven decisions rather than relying on guesswork.
+
+The key objectives were: build an ML model that can predict the value of any UK house, build a financial feasibility model using real lending criteria, provide house recommendations tailored to the user, and wrap it all in a UI that's easy to navigate."
+
+---
+
+## Slide 5: Section Header - ML Development
 **[~5 seconds]**
 
 "Let's start with the ML side."
 
 ---
 
-## Slide 4: ML Pipeline Overview
+## Slide 6: ML Pipeline Overview
 **[~45 seconds]**
 
 "The ML work broke down into four stages, each in its own Jupyter notebook.
@@ -42,7 +56,7 @@ Let me walk through each stage."
 
 ---
 
-## Slide 5: Data Fusion
+## Slide 7: Data Fusion
 **[~1 minute]**
 
 "Starting with data fusion. I had two datasets: house prices from the Land Registry, which has no column headers in the CSV so I defined them manually, and EPC certificates from the government's open data API.
@@ -55,7 +69,7 @@ For joining, I built a composite key. The house price data has a PAON field, whi
 
 ---
 
-## Slide 6: Geospatial Feature Engineering
+## Slide 8: Geospatial Feature Engineering
 **[~1 minute]**
 
 "Next, I enriched every property with information about its surroundings. The idea is that a house's value depends heavily on what's nearby: the quality of local schools, how close the nearest train station is, whether there's a supermarket within walking distance.
@@ -70,7 +84,7 @@ This stage produced 12 new features, including school distances, Ofsted ratings,
 
 ---
 
-## Slide 7: Feature Selection
+## Slide 9: Feature Selection
 **[~45 seconds]**
 
 "At this point I had 66+ columns. Many of those would add noise or cause problems if left in.
@@ -85,7 +99,7 @@ The result was 16 features, plus one engineered feature I'll explain on the next
 
 ---
 
-## Slide 8: Model Training & local_avg_price
+## Slide 10: Model Training & local_avg_price
 **[~1.5 minutes]**
 
 "This is where the interesting engineering decisions happen.
@@ -104,7 +118,7 @@ After finding the best hyperparameters, I retrained on train plus validation com
 
 ---
 
-## Slide 9: Model Results
+## Slide 11: Model Results
 **[~1 minute]**
 
 "Here are the results. The table shows accuracy at different tolerance levels, comparing before and after adding local_avg_price.
@@ -119,7 +133,7 @@ I chose SHAP over XGBoost's built-in feature_importances_ for exactly this reaso
 
 ---
 
-## Slide 10: Model Artefact Packaging
+## Slide 12: Model Artefact Packaging
 **[~30 seconds]**
 
 "The last step in the ML pipeline is packaging everything for production. I bundled six objects into a single joblib file: the trained XGBoost model, the label encoders for categorical features, the expected feature column order, the KDTree plus training prices for computing local_avg_price at inference time, and the SHAP explainer.
@@ -130,14 +144,14 @@ The tradeoff is that these are process-local globals, so if you wanted to run mu
 
 ---
 
-## Slide 11: Section Header - Web Platform
+## Slide 13: Section Header - Web Platform
 **[~5 seconds]**
 
 "Let's move to the web platform."
 
 ---
 
-## Slide 12: System Architecture
+## Slide 14: System Architecture
 **[~45 seconds]**
 
 "The architecture is straightforward. A React 19 single-page application talks to a Flask backend over REST. The backend sits in front of a SQLite database.
@@ -148,7 +162,7 @@ The data layer includes the SQLite database with five tables: houses (110 column
 
 ---
 
-## Slide 13: Backend Services
+## Slide 15: Backend Services
 **[~1.5 minutes]**
 
 "Let me go deeper on the three most interesting backend services.
@@ -161,7 +175,7 @@ The recommendation engine uses k-nearest-neighbors on four features: latitude, l
 
 ---
 
-## Slide 14: Enhanced Search & Filtering
+## Slide 16: Enhanced Search & Filtering
 **[~45 seconds]**
 
 "The enhanced search endpoint supports 8+ filters: price range, postcode prefix, property type, town, undervalued/overvalued detection (comparing predicted vs asking price), and walking distance to schools and stations.
@@ -172,7 +186,7 @@ One thing worth calling out: the affordability filter has O(N) complexity. When 
 
 ---
 
-## Slide 15: Frontend Highlights
+## Slide 17: Frontend Highlights
 **[~1 minute]**
 
 "On the frontend, a few things worth highlighting.
@@ -187,7 +201,7 @@ For state management, I didn't use Redux. Only two things need to persist across
 
 ---
 
-## Slide 16: Key Technical Decisions
+## Slide 18: Key Technical Decisions
 **[~45 seconds]**
 
 "A few decisions I want to call out.
@@ -202,7 +216,7 @@ And localStorage over Redux because the problem is small. Two JSON objects that 
 
 ---
 
-## Slide 17: Testing
+## Slide 19: Testing
 **[~1 minute]**
 
 "So how did I verify all of this actually works? I wrote unit tests for the core modules: the prediction logic, enrichment pipeline, and feasibility calculations. For the mortgage maths I validated outputs against manual spreadsheet calculations to make sure the amortisation and tax band logic was correct.
@@ -215,14 +229,14 @@ Then I ran load tests with concurrent requests to see how the backend holds up. 
 
 ---
 
-## Slide 18: Deployment (Placeholder)
+## Slide 20: Deployment (Placeholder)
 **[~15 seconds]**
 
 "On deployment: the intended setup is Heroku for the backend and Vercel for the frontend. I'm still working through some issues getting this fully deployed, so I'll skip the details here and happy to discuss offline."
 
 ---
 
-## Slide 19: Reflections & Improvements
+## Slide 21: Reflections & Improvements
 **[~1 minute]**
 
 "If I were building this again or taking it further, a few things I'd change.
@@ -233,11 +247,11 @@ On the web side: SQLite to PostgreSQL, ideally with PostGIS for native spatial q
 
 ---
 
-## Slide 20: Thank You
+## Slide 22: Thank You
 **[~10 seconds]**
 
 "That's HomeIQ. I'm happy to open up VS Code and walk through any of these files in detail. Thanks for listening."
 
 ---
 
-## Total estimated time: ~15-16 minutes
+## Total estimated time: ~17-18 minutes
